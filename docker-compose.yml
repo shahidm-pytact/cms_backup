@@ -1,0 +1,76 @@
+# Uses .env in project root. Never run: docker compose down -v (removes volumes and deletes DB data).
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: ${DB_CONTAINER_NAME:-cms-db}
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-1112}
+      POSTGRES_DB: ${POSTGRES_DB:-cms}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - cms_network
+
+  migrate:
+    build: .
+    image: cms-api:latest
+    container_name: ${MIGRATE_CONTAINER_NAME:-cms-migrate}
+    entrypoint: []  # Override Dockerfile entrypoint
+    command: alembic upgrade head
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://postgres:1112@db:5432/cms}
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - cms_network
+
+  api:
+    build: .
+    image: cms-api:latest
+    container_name: ${API_CONTAINER_NAME:-cms-api}
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "${API_PORT:-8000}:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://postgres:1112@db:5432/cms}
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    networks:
+      - cms_network
+
+# WARNING: Database data is stored in named volumes (postgres_data)
+# These volumes persist data across container restarts and removals.
+# To prevent accidental data loss, NEVER use: docker-compose down -v
+# The -v flag removes volumes and will DELETE ALL DATABASE DATA!
+volumes:
+  postgres_data:
+
+networks:
+  cms_network:
+    driver: bridge

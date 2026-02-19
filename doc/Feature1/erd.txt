@@ -1,0 +1,45 @@
+ENTITY RELATIONSHIP DIAGRAM (ERD)
+CMS - F-001 Core Platform Administration
+Crow's Foot Notation - PK and FK Fields Only
+
++----------------------+              +----------------------+
+|       users          |   1     M    |    audit_logs        |
++----------------------+              +----------------------+
+| id (PK)              |<------------>| id (PK)              |
+| role_id (FK)         |              | user_id (FK)         |
+| invited_by (FK)      |              |                      |
+| created_by (FK)      |              |                      |
+| updated_by (FK)      |              |                      |
++----------------------+              +----------------------+
+                                              |
+                                              | 1
+                                              |
+                                              |
+                                              | M
+                                              |
+                                              v
+                                    +----------------------+
+                                    |       roles          |
+                                    +----------------------+
+                                    | id (PK)              |
+                                    |                      |
+                                    |                      |
+                                    +----------------------+
+                                              |
+                                              |
+                                              |
+                                              |
+                                              v
+                                    +----------------------+
+                                    |    permissions       |
+                                    +----------------------+
+                                    | id (PK)              |
+                                    |                      |
+                                    |                      |
+                                    +----------------------+
+
+RELATIONSHIP CARDINALITY:
+- User M..1 Role (many users belong to one role)
+- User 1..M AuditLog (one user generates many audit logs)
+- User self-reference: invited_by, created_by, updated_by → users.id
+- Permissions: Reference table (no direct FK relationship, permissions stored as JSON in roles.permissions_json)

@@ -1,0 +1,62 @@
+{
+    "ROLE": "# Operator Role Permissions"
+}
+  
+  {
+    "modules": {
+       "blogs": {
+            "blog": {
+                "create": true,
+                "read_all": true,
+                "read": true,
+                "update": true,
+            }
+        },
+    }, 
+  }
+
+
+  {
+    "ROLE": "# Superadmin Role Permissions"
+}
+  
+  {
+    "modules": {
+        "users": {
+            "user": {
+                "invite": true,
+                "read_all": true,
+                "read": true,
+                "update": true,
+                "delete": true,
+                "status": true
+            }
+        },
+        "roles": {
+            "role": {
+                "create": true,
+                "read_all": true,
+                "read": true,
+                "update_all": true,
+                "update": true,
+                "delete": true,
+                "delete_all": true
+            }
+        },
+       "blogs": {
+            "blog": {
+                "create": true,
+                "read_all": true,
+                "read": true,
+                "update": true,
+                "delete": true
+
+            }
+        },
+        "audits": {
+            "audit": {
+                "read": false
+            }
+        }
+    }, 
+  }

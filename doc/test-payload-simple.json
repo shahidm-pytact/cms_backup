@@ -1,0 +1,28 @@
+{
+  "slug": "simple-test-blog",
+  "title": "Simple Test Blog",
+  "author": "Test Author",
+  "status": "draft",
+  "sections": [
+    {
+      "id": "intro",
+      "title": "Introduction",
+      "order_index": 1,
+      "blocks": [
+        {
+          "id": "intro-text",
+          "type": "text",
+          "order_index": 10,
+          "content": "This is a simple test blog with a base64 image."
+        },
+        {
+          "id": "intro-image",
+          "type": "image",
+          "order_index": 20,
+          "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+          "alt": "Test image"
+        }
+      ]
+    }
+  ]
+}

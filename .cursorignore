@@ -1,0 +1,214 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+.DS_Store?
+
+# Alembic
+alembic/versions/*.pyc
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+.coverage.*
+*.cover
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff (if applicable)
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff (if applicable)
+instance/
+.webassets-cache
+
+# Scrapy stuff (if applicable)
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Node modules (if any frontend dependencies)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Large binary files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Media files (if large)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.mp3
+*.wav
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Archives
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip

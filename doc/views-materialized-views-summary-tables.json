@@ -1,0 +1,1076 @@
+{
+  "metadata": {
+    "slug": "views-materialized-views-summary-tables",
+    "title": "From Slow to 100x Faster: The Small Change That Transformed Our API",
+    "subtitle": "When database queries slow down, use Views, Materialized Views, and Summary Tables. Learn when to use each, how to make them fast, and how to avoid common mistakes.",
+    "author": "Shahid Malik",
+    "authorImg": "/images/shahidProfile.webp",
+    "publishedDate": "2026-02-11T10:00:00.000Z",
+    "readingTime": "18 min read",
+    "blogImage": "/images/blog/database-views-blog.webp",
+    "metaDescription": "A practical guide to Views, Materialized Views, and Summary Tables: when to use each, performance optimization, indexing, refresh strategies, and common gotchas.",
+    "keywords": ["views", "materialized views", "summary tables", "PostgreSQL", "database optimization", "query performance", "indexing", "refresh strategies"]
+  },
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "blocks": [
+        {
+          "id": "intro-1",
+          "type": "text",
+          "content": "When your database queries start running slowly, you have three powerful tools to speed things up: Views, Materialized Views, and Summary Tables. Each one solves different problems and has its own pros and cons. This guide will help you understand when to use each, how to make them fast, and how to avoid common mistakes."
+        }
+      ]
+    },
+    {
+      "id": "main-content-what-is-view",
+      "title": "What is a View?",
+      "blocks": [
+        {
+          "id": "view-def",
+          "type": "text",
+          "content": "A view is a virtual table defined by a SQL query. It doesn't store data itself—instead, it executes the underlying query every time you access it."
+        },
+        {
+          "id": "view-example-label",
+          "type": "text",
+          "content": "Example"
+        },
+        {
+          "id": "view-code",
+          "type": "code",
+          "language": "sql",
+          "code": "CREATE VIEW popular_posts AS\nSELECT \n    p.post_id,\n    p.user_id,\n    p.content,\n    COUNT(l.like_id) as total_likes,\n    COUNT(c.comment_id) as total_comments\nFROM posts p\nLEFT JOIN likes l ON p.post_id = l.post_id\nLEFT JOIN comments c ON p.post_id = c.post_id\nWHERE p.created_at >= NOW() - INTERVAL '7 days'\nGROUP BY p.post_id, p.user_id, p.content\nHAVING COUNT(l.like_id) > 10;"
+        },
+        {
+          "id": "view-problems-title",
+          "type": "text",
+          "content": "Problems It Solves"
+        },
+        {
+          "id": "view-problems-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Simplification: Write complex queries once, reuse everywhere",
+            "Security: Grant access to views without exposing underlying tables",
+            "Abstraction: Hide schema changes from applications",
+            "Always up-to-date: Queries real-time data every time"
+          ]
+        },
+        {
+          "id": "view-drawbacks-title",
+          "type": "text",
+          "content": "Drawbacks"
+        },
+        {
+          "id": "view-drawbacks-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Performance: Runs the full query every time (can be slow for complex operations)",
+            "No pre-computation: Can't save results ahead of time"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-what-is-materialized-view",
+      "title": "What is a Materialized View?",
+      "blocks": [
+        {
+          "id": "mv-def",
+          "type": "text",
+          "content": "A materialized view saves query results to disk. It's a snapshot that must be refreshed periodically to stay current."
+        },
+        {
+          "id": "mv-example-label",
+          "type": "text",
+          "content": "Example"
+        },
+        {
+          "id": "mv-code",
+          "type": "code",
+          "language": "sql",
+          "code": "CREATE MATERIALIZED VIEW article_stats_daily AS\nSELECT \n    article_id,\n    DATE(created_at) as date,\n    COUNT(DISTINCT view_id) as total_views,\n    COUNT(DISTINCT comment_id) as total_comments,\n    COUNT(DISTINCT share_id) as total_shares\nFROM articles a\nLEFT JOIN article_views av ON a.article_id = av.article_id\nLEFT JOIN comments c ON a.article_id = c.article_id\nLEFT JOIN shares s ON a.article_id = s.article_id\nGROUP BY article_id, DATE(created_at);"
+        },
+        {
+          "id": "mv-problems-title",
+          "type": "text",
+          "content": "Problems It Solves"
+        },
+        {
+          "id": "mv-problems-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Speed: Pre-computed results make queries extremely fast",
+            "Resource efficiency: Expensive calculations done once during refresh",
+            "Perfect for dashboards: Great for reports that don't need real-time data",
+            "Handles big data: Works well with millions of rows and complex calculations"
+          ]
+        },
+        {
+          "id": "mv-drawbacks-title",
+          "type": "text",
+          "content": "Drawbacks"
+        },
+        {
+          "id": "mv-drawbacks-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Stale data: Only as fresh as last refresh",
+            "Storage overhead: Takes up disk space",
+            "Refresh cost: Can be expensive on large datasets",
+            "Can block queries: Regular refresh locks the table (solved with concurrent refresh)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-what-is-summary-table",
+      "title": "What is a Summary Table?",
+      "blocks": [
+        {
+          "id": "summary-def",
+          "type": "text",
+          "content": "A summary table is a regular physical table that stores pre-aggregated data. Unlike materialized views, you manually control how and when data gets inserted/updated."
+        },
+        {
+          "id": "summary-example-label",
+          "type": "text",
+          "content": "Example"
+        },
+        {
+          "id": "summary-code",
+          "type": "code",
+          "language": "sql",
+          "code": "CREATE TABLE hourly_event_summary (\n    event_type VARCHAR(100),\n    hour TIMESTAMP,\n    total_events BIGINT,\n    unique_users BIGINT,\n    total_revenue DECIMAL(10,2),\n    PRIMARY KEY (event_type, hour)\n);\n\n-- Incremental update (runs every hour)\nINSERT INTO hourly_event_summary\nSELECT \n    event_type,\n    DATE_TRUNC('hour', event_time) as hour,\n    COUNT(*) as total_events,\n    COUNT(DISTINCT user_id) as unique_users,\n    SUM(revenue) as total_revenue\nFROM events\nWHERE event_time >= CURRENT_DATE\nGROUP BY event_type, DATE_TRUNC('hour', event_time)\nON CONFLICT (event_type, hour) DO UPDATE SET\n    total_events = hourly_event_summary.total_events + EXCLUDED.total_events,\n    unique_users = hourly_event_summary.unique_users + EXCLUDED.unique_users,\n    total_revenue = hourly_event_summary.total_revenue + EXCLUDED.total_revenue;"
+        },
+        {
+          "id": "summary-problems-title",
+          "type": "text",
+          "content": "Problems It Solves"
+        },
+        {
+          "id": "summary-problems-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Maximum performance: Regular table with full indexing control",
+            "Custom update logic: Full control over incremental updates and business logic",
+            "Flexibility: Add columns, indexes, constraints as needed",
+            "Mixed data sources: Combine data from multiple databases"
+          ]
+        },
+        {
+          "id": "summary-drawbacks-title",
+          "type": "text",
+          "content": "Drawbacks"
+        },
+        {
+          "id": "summary-drawbacks-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Manual maintenance: You're responsible for keeping data up-to-date",
+            "Development overhead: Need to write ETL/update logic",
+            "Data consistency risk: Bugs in update logic can cause incorrect data"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-mv-vs-summary",
+      "title": "Materialized View vs Summary Table: The Critical Difference",
+      "blocks": [
+        {
+          "id": "diff-intro",
+          "type": "text",
+          "content": "On paper, Materialized Views and Summary Tables look the same—both store pre-computed data. But in production, Summary Tables are faster and more scalable. Here's why:"
+        },
+        {
+          "id": "at-select-title",
+          "type": "text",
+          "content": "At SELECT Time (Read Performance)"
+        },
+        {
+          "id": "at-select-text",
+          "type": "text",
+          "content": "Both are fast. Read speed is similar:"
+        },
+        {
+          "id": "at-select-code",
+          "type": "code",
+          "language": "sql",
+          "code": "SELECT * FROM mv_org_dashboard;      -- Materialized view\nSELECT * FROM org_dashboard_summary; -- Summary table"
+        },
+        {
+          "id": "at-select-note",
+          "type": "text",
+          "content": "Both read stored rows. The difference is NOT here."
+        },
+        {
+          "id": "real-diff-title",
+          "type": "text",
+          "content": "The Real Difference: Refresh/Update Time"
+        },
+        {
+          "id": "mv-refresh-title",
+          "type": "text",
+          "content": "Materialized View Refresh (Full Rebuild)"
+        },
+        {
+          "id": "mv-refresh-when",
+          "type": "text",
+          "content": "When you run:"
+        },
+        {
+          "id": "mv-refresh-code",
+          "type": "code",
+          "language": "sql",
+          "code": "REFRESH MATERIALIZED VIEW mv_org_dashboard;"
+        },
+        {
+          "id": "mv-refresh-steps",
+          "type": "text",
+          "content": "PostgreSQL:"
+        },
+        {
+          "id": "mv-refresh-steps-list",
+          "type": "list",
+          "variant": "number",
+          "items": [
+            "Runs the entire heavy query again",
+            "Rebuilds the whole MV from scratch",
+            "Rewrites the entire MV table",
+            "Rebuilds all indexes",
+            "Needs locks (or complex concurrent refresh)"
+          ]
+        },
+        {
+          "id": "mv-refresh-note",
+          "type": "highlight",
+          "content": "Even if only 1 record changed, it recomputes everything. Full recomputation. No partial update.",
+          "variant": "primary"
+        },
+        {
+          "id": "summary-update-title",
+          "type": "text",
+          "content": "Summary Table Update (Incremental)"
+        },
+        {
+          "id": "summary-update-text",
+          "type": "text",
+          "content": "You control the logic. You can update only affected rows:"
+        },
+        {
+          "id": "summary-update-code",
+          "type": "code",
+          "language": "sql",
+          "code": "-- Example: one new lead inserted for org_id = 'X'\n-- Update only that row:\nUPDATE org_dashboard_summary\nSET total_leads = total_leads + 1\nWHERE org_id = 'X';\n\n-- Or recompute only that org:\nUPDATE org_dashboard_summary\nSET total_leads = (SELECT COUNT(*) FROM leads WHERE org_id = 'X')\nWHERE org_id = 'X';"
+        },
+        {
+          "id": "summary-update-note",
+          "type": "highlight",
+          "content": "Partial update. Not full rebuild.",
+          "variant": "primary"
+        },
+        {
+          "id": "prod-impact-title",
+          "type": "text",
+          "content": "Real Production Impact"
+        },
+        {
+          "id": "prod-impact-scenario",
+          "type": "text",
+          "content": "Scenario: 10 million leads, 50k organizations, dashboard refresh every 5 minutes"
+        },
+        {
+          "id": "prod-impact-table",
+          "type": "comparison",
+          "title": "Real Production Impact",
+          "options": {
+            "labelA": "Materialized View",
+            "labelB": "Summary Table"
+          },
+          "items": [
+            { "feature": "Data change for 1 org", "optionA": "Recompute all 50k orgs", "optionB": "Update 1 org" },
+            { "feature": "CPU usage", "optionA": "Very high", "optionB": "Very low" },
+            { "feature": "I/O", "optionA": "Full table rewrite", "optionB": "Single row update" },
+            { "feature": "Locking", "optionA": "Yes / complex", "optionB": "None" },
+            { "feature": "Refresh time", "optionA": "Minutes", "optionB": "Milliseconds" },
+            { "feature": "Scalability", "optionA": "Poor as data grows", "optionB": "Excellent" }
+          ]
+        },
+        {
+          "id": "mv-slow-over-time-title",
+          "type": "text",
+          "content": "Why Materialized Views Become Slow Over Time"
+        },
+        {
+          "id": "mv-slow-intro",
+          "type": "text",
+          "content": "As tables grow:"
+        },
+        {
+          "id": "mv-slow-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "MV refresh time keeps increasing",
+            "Index rebuild cost increases",
+            "Disk I/O spikes",
+            "Hard to refresh frequently"
+          ]
+        },
+        {
+          "id": "summary-constant",
+          "type": "text",
+          "content": "But summary table cost stays constant because you touch only changed data."
+        }
+      ]
+    },
+    {
+      "id": "main-content-performance-optimization",
+      "title": "Performance Optimization: The Real Numbers",
+      "blocks": [
+        {
+          "id": "perf-example-title",
+          "type": "text",
+          "content": "Real-World Example: Social Media Platform"
+        },
+        {
+          "id": "perf-scenario",
+          "type": "text",
+          "content": "Scenario: Dashboard showing most popular posts from last 30 days (50M posts, 500M likes, 100M comments)"
+        },
+        {
+          "id": "approach1-title",
+          "type": "text",
+          "content": "Approach 1: Direct Query"
+        },
+        {
+          "id": "approach1-code",
+          "type": "code",
+          "language": "sql",
+          "code": "SELECT p.post_id, p.user_id, p.content,\n    COUNT(DISTINCT l.like_id) as total_likes,\n    COUNT(DISTINCT c.comment_id) as total_comments,\n    COUNT(DISTINCT s.share_id) as total_shares\nFROM posts p\nLEFT JOIN likes l ON p.post_id = l.post_id\nLEFT JOIN comments c ON p.post_id = c.post_id\nLEFT JOIN shares s ON p.post_id = s.post_id\nWHERE p.created_at >= NOW() - INTERVAL '30 days'\nGROUP BY p.post_id, p.user_id, p.content\nORDER BY (total_likes + total_comments + total_shares) DESC\nLIMIT 100;"
+        },
+        {
+          "id": "approach1-time",
+          "type": "text",
+          "content": "Query Time: ~35-50 seconds"
+        },
+        {
+          "id": "approach2",
+          "type": "text",
+          "content": "Approach 2: Materialized View (No Index) — Query Time: ~3-6 seconds (85% improvement)"
+        },
+        {
+          "id": "approach3-title",
+          "type": "text",
+          "content": "Approach 3: Materialized View (With Indexes)"
+        },
+        {
+          "id": "approach3-code",
+          "type": "code",
+          "language": "sql",
+          "code": "CREATE MATERIALIZED VIEW mv_popular_posts_30days AS ...;\nCREATE INDEX idx_mv_posts_engagement ON mv_popular_posts_30days(engagement_score DESC);\nREFRESH MATERIALIZED VIEW mv_popular_posts_30days;"
+        },
+        {
+          "id": "approach3-time",
+          "type": "text",
+          "content": "Query Time: ~0.15-0.4 seconds (99%+ improvement)"
+        },
+        {
+          "id": "approach4",
+          "type": "text",
+          "content": "Approach 4: Summary Table (Incremental) — Query Time: ~0.05-0.12 seconds (99.7%+ improvement)"
+        },
+        {
+          "id": "perf-comparison-title",
+          "type": "text",
+          "content": "Performance Comparison"
+        },
+        {
+          "id": "perf-comparison-table",
+          "type": "code",
+          "language": "text",
+          "code": "| Approach          | Query Time    | Refresh/Update Time | Improvement |\n|-------------------|---------------|---------------------|-------------|\n| Direct Query      | 35-50s        | N/A                 | Baseline    |\n| Regular View      | 32-48s        | N/A                 | ~10%        |\n| MV (no index)     | 3-6s          | 45-60s              | ~85%        |\n| MV (indexed)      | 0.15-0.4s     | 45-60s              | 99%+        |\n| Summary Table     | 0.05-0.12s    | 2-5s                | 99.7%+      |"
+        },
+        {
+          "id": "business-impact-title",
+          "type": "text",
+          "content": "Business Impact"
+        },
+        {
+          "id": "business-impact-text",
+          "type": "text",
+          "content": "For a dashboard with 2,000 views per day:"
+        },
+        {
+          "id": "business-impact-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Without optimization: 2,000 × 42s = ~23 hours/day of DB processing",
+            "With indexed MV: 2,000 × 0.25s + 24 refreshes × 45s = ~23 minutes/day (98% reduction)",
+            "With summary table: 2,000 × 0.08s + 24 updates × 2s = ~3.5 minutes/day (99.7% reduction)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-indexing-strategies",
+      "title": "Indexing Strategies: The Production Secret",
+      "blocks": [
+        {
+          "id": "index-golden-rule",
+          "type": "highlight",
+          "content": "Your materialized view is a real table—treat it like one! The biggest performance wins come from proper indexing, not just pre-computing data.",
+          "variant": "primary"
+        },
+        {
+          "id": "index-critical",
+          "type": "text",
+          "content": "Critical: Create indexes based on how people will query the MV, not the base tables."
+        },
+        {
+          "id": "index-example-title",
+          "type": "text",
+          "content": "Example: Proper Indexing Strategy"
+        },
+        {
+          "id": "index-example-code",
+          "type": "code",
+          "language": "sql",
+          "code": "CREATE MATERIALIZED VIEW mv_article_performance AS\nSELECT \n    author_id,\n    category,\n    DATE_TRUNC('week', published_at) as week,\n    COUNT(*) as article_count,\n    SUM(view_count) as total_views\nFROM articles\nGROUP BY author_id, category, DATE_TRUNC('week', published_at);\n\n-- Step 1: Analyze query patterns\n-- Will filter by author_id? Yes\n-- Will filter by week? Yes  \n-- Will sort by total_views? Yes\n\n-- Step 2: Create indexes BEFORE first refresh\nCREATE UNIQUE INDEX idx_mv_article_unique \nON mv_article_performance(author_id, category, week);\n\nCREATE INDEX idx_mv_article_author_week \nON mv_article_performance(author_id, week);\n\nCREATE INDEX idx_mv_article_views \nON mv_article_performance(total_views DESC);\n\n-- Step 3: Refresh\nREFRESH MATERIALIZED VIEW mv_article_performance;"
+        },
+        {
+          "id": "index-result",
+          "type": "text",
+          "content": "Result: Query time drops from 30 seconds to 120 milliseconds."
+        },
+        {
+          "id": "index-best-practices-title",
+          "type": "text",
+          "content": "Indexing Best Practices"
+        },
+        {
+          "id": "index-bp1-step",
+          "type": "step",
+          "stepNumber": 1,
+          "title": "Create Indexes BEFORE Loading Data"
+        },
+        {
+          "id": "index-bp1-code",
+          "type": "code",
+          "language": "sql",
+          "code": "-- WRONG: Create MV, refresh, then index (very slow!)\nCREATE MATERIALIZED VIEW mv_stats AS SELECT ...;\nREFRESH MATERIALIZED VIEW mv_stats;  -- Loads millions of rows\nCREATE INDEX idx_mv_date ON mv_stats(date);  -- Takes 10+ minutes!\n\n-- CORRECT: Create MV, index empty table, then refresh\nCREATE MATERIALIZED VIEW mv_stats AS SELECT ...;\nCREATE INDEX idx_mv_date ON mv_stats(date);  -- Takes 1 second!\nREFRESH MATERIALIZED VIEW mv_stats;"
+        },
+        {
+          "id": "index-bp1-why",
+          "type": "text",
+          "content": "Why: Creating an index on an empty table is instant. On a populated table, it can take 10+ minutes and locks the table."
+        },
+        {
+          "id": "index-bp2-step",
+          "type": "step",
+          "stepNumber": 2,
+          "title": "Index for Common Patterns"
+        },
+        {
+          "id": "index-bp2-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Filter columns: CREATE INDEX idx_mv_date ON mv_stats(date);",
+            "Sort columns: CREATE INDEX idx_mv_views ON mv_stats(total_views DESC);",
+            "Composite: CREATE INDEX idx_mv_author_views ON mv_stats(author_id, total_views DESC);"
+          ]
+        },
+        {
+          "id": "index-bp3-step",
+          "type": "step",
+          "stepNumber": 3,
+          "title": "Monitor Index Usage"
+        },
+        {
+          "id": "index-bp3-code",
+          "type": "code",
+          "language": "sql",
+          "code": "EXPLAIN ANALYZE\nSELECT * FROM mv_article_performance WHERE author_id = 123;"
+        },
+        {
+          "id": "index-bp3-look",
+          "type": "text",
+          "content": "Look for: RIGHT: Index Scan using idx_mv_article_author_week — WRONG: Seq Scan (add an index!)"
+        }
+      ]
+    },
+    {
+      "id": "main-content-refresh-strategies",
+      "title": "Materialized View Refresh Strategies",
+      "blocks": [
+        {
+          "id": "refresh-step-1",
+          "type": "step",
+          "stepNumber": 1,
+          "title": "The Blocking Problem"
+        },
+        {
+          "id": "refresh-blocking-text",
+          "type": "text",
+          "content": "Regular refresh locks the table, blocking all queries during refresh:"
+        },
+        {
+          "id": "refresh-blocking-code",
+          "type": "code",
+          "language": "sql",
+          "code": "REFRESH MATERIALIZED VIEW mv_article_stats;  -- Takes 45 seconds\n-- All queries blocked during this time!"
+        },
+        {
+          "id": "refresh-blocking-result",
+          "type": "text",
+          "content": "Result: Users wait 45 seconds every refresh cycle."
+        },
+        {
+          "id": "refresh-step-2",
+          "type": "step",
+          "stepNumber": 2,
+          "title": "Solution: Concurrent Refresh"
+        },
+        {
+          "id": "refresh-concurrent-text",
+          "type": "text",
+          "content": "PostgreSQL's concurrent refresh allows reads to continue during refresh."
+        },
+        {
+          "id": "refresh-step-3",
+          "type": "step",
+          "stepNumber": 3,
+          "title": "How It Works"
+        },
+        {
+          "id": "refresh-how-list",
+          "type": "list",
+          "variant": "number",
+          "items": [
+            "Creates a temporary copy",
+            "Populates it with fresh data (doesn't block reads)",
+            "Atomically swaps old and new versions",
+            "Drops old version"
+          ]
+        },
+        {
+          "id": "refresh-step-4",
+          "type": "step",
+          "stepNumber": 4,
+          "title": "Requirements"
+        },
+        {
+          "id": "refresh-requirements-text",
+          "type": "text",
+          "content": "You MUST have a unique index for concurrent refresh:"
+        },
+        {
+          "id": "refresh-requirements-code",
+          "type": "code",
+          "language": "sql",
+          "code": "-- Step 1: Create unique index (what makes each row unique?)\nCREATE UNIQUE INDEX idx_mv_article_unique \nON mv_article_stats(author_id, category, week);\n\n-- Step 2: Use concurrent refresh\nREFRESH MATERIALIZED VIEW CONCURRENTLY mv_article_stats;"
+        },
+        {
+          "id": "refresh-step-5",
+          "type": "step",
+          "stepNumber": 5,
+          "title": "Trade-Offs"
+        },
+        {
+          "id": "refresh-advantages",
+          "type": "text",
+          "content": "Advantages: No blocking - reads continue during refresh; Better user experience; Production-safe"
+        },
+        {
+          "id": "refresh-disadvantages",
+          "type": "text",
+          "content": "Disadvantages: 10-30% slower than regular refresh; Uses more disk space temporarily; Requires unique index"
+        },
+        {
+          "id": "refresh-tradeoff-worth",
+          "type": "text",
+          "content": "The trade-off is worth it — slightly slower refresh is better than blocking users."
+        },
+        {
+          "id": "refresh-step-6",
+          "type": "step",
+          "stepNumber": 6,
+          "title": "Scheduling Refreshes"
+        },
+        {
+          "id": "scheduling-step-1",
+          "type": "step",
+          "title": "Option 1: pg_cron Extension"
+        },
+        {
+          "id": "scheduling-option1-code",
+          "type": "code",
+          "language": "sql",
+          "code": "CREATE EXTENSION IF NOT EXISTS pg_cron;\nSELECT cron.schedule(\n    'refresh-mv',\n    '0 * * * *',  -- Every hour\n    $$REFRESH MATERIALIZED VIEW CONCURRENTLY mv_article_stats$$\n);"
+        },
+        {
+          "id": "scheduling-step-2",
+          "type": "step",
+          "title": "Option 2: Cron Job"
+        },
+        {
+          "id": "scheduling-option2-code",
+          "type": "code",
+          "language": "bash",
+          "code": "0 * * * * psql -d your_db -c \"REFRESH MATERIALIZED VIEW CONCURRENTLY mv_article_stats;\""
+        },
+        {
+          "id": "scheduling-step-3",
+          "type": "step",
+          "title": "Option 3: Advisory Locks (Prevent Overlaps)"
+        },
+        {
+          "id": "scheduling-option3-code",
+          "type": "code",
+          "language": "sql",
+          "code": "CREATE OR REPLACE FUNCTION refresh_mv_safely()\nRETURNS void AS $$\nBEGIN\n    IF pg_try_advisory_lock(12345) THEN\n        BEGIN\n            REFRESH MATERIALIZED VIEW CONCURRENTLY mv_article_stats;\n        EXCEPTION WHEN OTHERS THEN\n            RAISE NOTICE 'Refresh failed: %', SQLERRM;\n        END;\n        PERFORM pg_advisory_unlock(12345);\n    ELSE\n        RAISE NOTICE 'Refresh already in progress, skipping';\n    END IF;\nEND;\n$$ LANGUAGE plpgsql;"
+        },
+        {
+          "id": "refresh-step-7",
+          "type": "step",
+          "stepNumber": 7,
+          "title": "Refresh Frequency Guidelines"
+        },
+        {
+          "id": "refresh-frequency-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "High-traffic dashboards: Every 15-30 minutes",
+            "Daily reports: Once per hour",
+            "Weekly/monthly analytics: Once per day",
+            "Historical data: Once per week or on-demand"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-performance-tuning",
+      "title": "Performance Tuning Best Practices",
+      "blocks": [
+        {
+          "id": "tuning-1",
+          "type": "text",
+          "content": "1. Indexes Aligned to Read Patterns — Covered extensively above - it's the single biggest performance lever."
+        },
+        {
+          "id": "tuning-2-title",
+          "type": "text",
+          "content": "2. Keep Base Tables Healthy"
+        },
+        {
+          "id": "tuning-2-text",
+          "type": "text",
+          "content": "Bloated base tables make refresh slower:"
+        },
+        {
+          "id": "tuning-2-code",
+          "type": "code",
+          "language": "sql",
+          "code": "-- Update statistics\nANALYZE articles;\nANALYZE article_views;\n\n-- Clean up bloat\nVACUUM ANALYZE articles;\n\n-- Check for bloat\nSELECT * FROM pg_stat_user_tables WHERE n_dead_tup > 1000;"
+        },
+        {
+          "id": "tuning-3-title",
+          "type": "text",
+          "content": "3. Simplify the MV Query"
+        },
+        {
+          "id": "tuning-3-question",
+          "type": "text",
+          "content": "Ask: Do you really need all those joins?"
+        },
+        {
+          "id": "tuning-3-code",
+          "type": "code",
+          "language": "sql",
+          "code": "-- Too complex: Multiple joins, subqueries\nCREATE MATERIALIZED VIEW mv_complex AS\nSELECT a.article_id, au.name as author_name, c.name as category_name,\n    (SELECT COUNT(*) FROM article_tags WHERE article_id = a.article_id) as tag_count\nFROM articles a\nJOIN authors au ON a.author_id = au.author_id\nJOIN categories c ON a.category_id = c.category_id;\n\n-- Simpler: Only what you need\nCREATE MATERIALIZED VIEW mv_simple AS\nSELECT article_id, author_id, category_id, view_count, comment_count\nFROM articles;"
+        },
+        {
+          "id": "tuning-4-title",
+          "type": "text",
+          "content": "4. Resource Guardrails"
+        },
+        {
+          "id": "tuning-4-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Schedule during low-traffic windows: '0 2 * * *' (2 AM)",
+            "Use EXPLAIN ANALYZE to spot expensive operations",
+            "Tune work_mem for large sorts: SET work_mem = '256MB';",
+            "Set statement timeout: SET statement_timeout = '1h';"
+          ]
+        },
+        {
+          "id": "tuning-5-title",
+          "type": "text",
+          "content": "5. Monitor Refresh Performance"
+        },
+        {
+          "id": "tuning-5-code",
+          "type": "code",
+          "language": "sql",
+          "code": "CREATE TABLE mv_refresh_log (\n    mv_name TEXT,\n    refresh_start TIMESTAMP,\n    refresh_end TIMESTAMP,\n    duration INTERVAL,\n    rows_refreshed BIGINT\n);\n\nCREATE OR REPLACE FUNCTION refresh_mv_with_logging(mv_name TEXT)\nRETURNS void AS $$\nDECLARE\n    start_time TIMESTAMP := NOW();\n    end_time TIMESTAMP;\n    row_count BIGINT;\nBEGIN\n    EXECUTE format('REFRESH MATERIALIZED VIEW CONCURRENTLY %I', mv_name);\n    end_time := NOW();\n    EXECUTE format('SELECT COUNT(*) FROM %I', mv_name) INTO row_count;\n    INSERT INTO mv_refresh_log VALUES (mv_name, start_time, end_time, \n        end_time - start_time, row_count);\nEND;\n$$ LANGUAGE plpgsql;"
+        }
+      ]
+    },
+    {
+      "id": "main-content-tradeoffs",
+      "title": "Trade-Offs and Design Decisions",
+      "blocks": [
+        {
+          "id": "tradeoff-1-title",
+          "type": "text",
+          "content": "1. Freshness Window"
+        },
+        {
+          "id": "tradeoff-1-text",
+          "type": "text",
+          "content": "Staleness is a contract. Accept data that's X minutes/hours old. Decision: How fresh does data need to be? MV: Accepts 15 minutes to 1 hour of staleness. Alternative: For real-time, use streaming aggregates or incremental summary tables."
+        },
+        {
+          "id": "tradeoff-2-title",
+          "type": "text",
+          "content": "2. Refresh Cost and Ownership"
+        },
+        {
+          "id": "tradeoff-2-text",
+          "type": "text",
+          "content": "Someone must own the refresh schedule, monitor it, and tune it. Set up alerts if refresh takes > 5 minutes or fails. Monitor refresh duration as data grows."
+        },
+        {
+          "id": "tradeoff-3-title",
+          "type": "text",
+          "content": "3. Storage and Backup Footprint"
+        },
+        {
+          "id": "tradeoff-3-text",
+          "type": "text",
+          "content": "You're duplicating data. MV size = base query result size. Factor into disk capacity and backup windows."
+        },
+        {
+          "id": "tradeoff-4-title",
+          "type": "text",
+          "content": "4. Maintenance Surface Area"
+        },
+        {
+          "id": "tradeoff-4-text",
+          "type": "text",
+          "content": "Another object to index, refresh, monitor, and document. Create runbooks for troubleshooting. Document freshness contracts for users."
+        },
+        {
+          "id": "when-worth-title",
+          "type": "text",
+          "content": "When Trade-Offs Are Worth It"
+        },
+        {
+          "id": "use-mv-when",
+          "type": "text",
+          "content": "Use materialized views when:"
+        },
+        {
+          "id": "use-mv-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Query performance is a bottleneck",
+            "Data freshness allows for some staleness",
+            "Refresh cost is acceptable",
+            "Storage cost is acceptable",
+            "Team can maintain the refresh pipeline"
+          ]
+        },
+        {
+          "id": "dont-force-title",
+          "type": "text",
+          "content": "Don't force it if:"
+        },
+        {
+          "id": "dont-force-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "You need real-time data",
+            "Refresh would disrupt primary workload",
+            "Storage is extremely constrained",
+            "Query patterns change frequently"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-gotchas",
+      "title": "Common Gotchas and Troubleshooting",
+      "blocks": [
+        {
+          "id": "gotcha-1-title",
+          "type": "text",
+          "content": "Symptom 1: MV Is Fast at First, Then Slows Down"
+        },
+        {
+          "id": "gotcha-1-cause",
+          "type": "text",
+          "content": "Cause: Data growth + missing indexes. Full scans become expensive."
+        },
+        {
+          "id": "gotcha-1-fix",
+          "type": "text",
+          "content": "Fix:"
+        },
+        {
+          "id": "gotcha-1-code",
+          "type": "code",
+          "language": "sql",
+          "code": "EXPLAIN ANALYZE SELECT * FROM mv_stats WHERE author_id = 123;\n-- If you see \"Seq Scan\", add an index:\nCREATE INDEX idx_mv_author ON mv_stats(author_id);"
+        },
+        {
+          "id": "gotcha-2-title",
+          "type": "text",
+          "content": "Symptom 2: Concurrent Refresh Fails"
+        },
+        {
+          "id": "gotcha-2-error",
+          "type": "text",
+          "content": "Error: cannot refresh materialized view concurrently"
+        },
+        {
+          "id": "gotcha-2-cause",
+          "type": "text",
+          "content": "Cause: Missing or incorrect unique index."
+        },
+        {
+          "id": "gotcha-2-fix",
+          "type": "code",
+          "language": "sql",
+          "code": "-- Identify what makes each row unique\nCREATE UNIQUE INDEX idx_mv_unique \nON mv_stats(author_id, category, week);"
+        },
+        {
+          "id": "gotcha-3-title",
+          "type": "text",
+          "content": "Symptom 3: Refresh Jobs Overlap"
+        },
+        {
+          "id": "gotcha-3-fix",
+          "type": "text",
+          "content": "Cause: Refresh duration exceeds schedule interval. Fix: Use advisory locks (see Scheduling section above) or increase schedule interval."
+        },
+        {
+          "id": "gotcha-4-title",
+          "type": "text",
+          "content": "Symptom 4: Refresh Disrupts Primary Workload"
+        },
+        {
+          "id": "gotcha-4-fix",
+          "type": "text",
+          "content": "Fix: 1. Move refresh to off-peak windows 2. Simplify refresh query 3. Set resource limits: SET work_mem = '128MB'; SET statement_timeout = '30m';"
+        },
+        {
+          "id": "gotcha-5-title",
+          "type": "text",
+          "content": "Symptom 5: MV Results Surprise People"
+        },
+        {
+          "id": "gotcha-5-cause",
+          "type": "text",
+          "content": "Cause: Freshness contract not visible."
+        },
+        {
+          "id": "gotcha-5-fix",
+          "type": "text",
+          "content": "Fix: Track and display last refresh time:"
+        },
+        {
+          "id": "gotcha-5-code",
+          "type": "code",
+          "language": "sql",
+          "code": "CREATE TABLE mv_metadata (\n    mv_name TEXT PRIMARY KEY,\n    last_refresh_at TIMESTAMP,\n    rows_count BIGINT\n);\n\n-- Update after each refresh\nINSERT INTO mv_metadata (mv_name, last_refresh_at, rows_count)\nVALUES ('mv_stats', NOW(), (SELECT COUNT(*) FROM mv_stats))\nON CONFLICT (mv_name) DO UPDATE SET\n    last_refresh_at = EXCLUDED.last_refresh_at,\n    rows_count = EXCLUDED.rows_count;"
+        },
+        {
+          "id": "gotcha-5-important",
+          "type": "text",
+          "content": "Important: pg_matviews does NOT store last_refresh. You must track it yourself."
+        },
+        {
+          "id": "gotcha-6-title",
+          "type": "text",
+          "content": "Symptom 6: Refresh Takes Longer Over Time"
+        },
+        {
+          "id": "gotcha-6-cause",
+          "type": "text",
+          "content": "Cause: Base table data growth, bloat, or missing indexes."
+        },
+        {
+          "id": "gotcha-6-fix",
+          "type": "text",
+          "content": "Fix: 1. VACUUM ANALYZE base tables 2. Check base table indexes with EXPLAIN ANALYZE 3. Consider partitioning or incremental summary tables"
+        }
+      ]
+    },
+    {
+      "id": "main-content-alternatives",
+      "title": "Alternatives Worth Considering",
+      "blocks": [
+        {
+          "id": "alt-1",
+          "type": "text",
+          "content": "1. Normal Views — Use when: Few reads, always-current requirement, moderate complexity. No storage, no refresh jobs, always current. Computation cost on every read."
+        },
+        {
+          "id": "alt-2",
+          "type": "text",
+          "content": "2. Summary Tables + ETL — Use when: Incremental updates feasible, need full control. Maximum performance, custom logic, incremental updates. More work to build, manual maintenance."
+        },
+        {
+          "id": "alt-3",
+          "type": "text",
+          "content": "3. Partitioning + Indexing — Use when: Data layout is the constraint, time-series queries. Query planner skips partitions, faster queries. Doesn't help with complex aggregations."
+        },
+        {
+          "id": "alt-4",
+          "type": "text",
+          "content": "4. Cache Layer (Redis, Memcached) — Use when: Sub-millisecond latency needed, key-value lookups. Extremely fast, reduces DB load. Less suitable for complex aggregations."
+        },
+        {
+          "id": "alt-5",
+          "type": "text",
+          "content": "5. Timescale Continuous Aggregates — Use when: Time-series rollups, using TimescaleDB. Automatic incremental refresh, optimized for time-bucketed data. Vendor lock-in, only for time-series."
+        },
+        {
+          "id": "alt-6",
+          "type": "text",
+          "content": "6. Streaming Aggregates (Kafka, Flink) — Use when: Real-time aggregations, high-volume event streams. Real-time updates, handles high volume. Complex infrastructure, higher operational overhead."
+        }
+      ]
+    },
+    {
+      "id": "main-content-before-after",
+      "title": "Before/After Proof",
+      "blocks": [
+        {
+          "id": "before-title",
+          "type": "text",
+          "content": "Baseline Query"
+        },
+        {
+          "id": "before-code",
+          "type": "code",
+          "language": "sql",
+          "code": "SELECT author_id, category, DATE_TRUNC('week', published_at) as week,\n    COUNT(*) as article_count, SUM(view_count) as total_views\nFROM articles\nWHERE published_at >= CURRENT_DATE - INTERVAL '12 weeks'\nGROUP BY author_id, category, DATE_TRUNC('week', published_at)\nORDER BY total_views DESC;"
+        },
+        {
+          "id": "before-time",
+          "type": "text",
+          "content": "Time: 22 seconds"
+        },
+        {
+          "id": "after-title",
+          "type": "text",
+          "content": "Optimized Materialized View"
+        },
+        {
+          "id": "after-code",
+          "type": "code",
+          "language": "sql",
+          "code": "CREATE MATERIALIZED VIEW mv_author_performance AS ...;\nCREATE UNIQUE INDEX idx_mv_author_unique ON mv_author_performance(author_id, category, week);\nCREATE INDEX idx_mv_author_week ON mv_author_performance(author_id, week);\nCREATE INDEX idx_mv_author_views ON mv_author_performance(total_views DESC);\nREFRESH MATERIALIZED VIEW CONCURRENTLY mv_author_performance;"
+        },
+        {
+          "id": "after-stats",
+          "type": "text",
+          "content": "Query time: 150 milliseconds. Refresh overhead: 3.8 seconds (hourly)"
+        },
+        {
+          "id": "math-title",
+          "type": "text",
+          "content": "The Math"
+        },
+        {
+          "id": "math-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Baseline: 22 seconds per query",
+            "Optimized: 0.15 seconds per query",
+            "50 queries/day: Without MV = 1,100 seconds/day; With MV = 98.7 seconds/day",
+            "Savings: 91% reduction in compute time"
+          ]
+        },
+        {
+          "id": "tracking-title",
+          "type": "text",
+          "content": "Tracking Last Refresh Time"
+        },
+        {
+          "id": "tracking-code",
+          "type": "code",
+          "language": "sql",
+          "code": "CREATE TABLE mv_refresh_metadata (\n    mv_name TEXT PRIMARY KEY,\n    last_refresh_at TIMESTAMP,\n    refresh_duration INTERVAL,\n    rows_count BIGINT\n);\n\nCREATE OR REPLACE FUNCTION refresh_mv_with_metadata(mv_name TEXT)\nRETURNS void AS $$\nDECLARE\n    start_time TIMESTAMP := NOW();\n    end_time TIMESTAMP;\n    row_count BIGINT;\nBEGIN\n    EXECUTE format('REFRESH MATERIALIZED VIEW CONCURRENTLY %I', mv_name);\n    end_time := NOW();\n    EXECUTE format('SELECT COUNT(*) FROM %I', mv_name) INTO row_count;\n    INSERT INTO mv_refresh_metadata VALUES \n        (mv_name, end_time, end_time - start_time, row_count)\n    ON CONFLICT (mv_name) DO UPDATE SET\n        last_refresh_at = EXCLUDED.last_refresh_at,\n        refresh_duration = EXCLUDED.refresh_duration,\n        rows_count = EXCLUDED.rows_count;\nEND;\n$$ LANGUAGE plpgsql;"
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "title": "Conclusion",
+      "blocks": [
+        {
+          "id": "conclusion-1",
+          "type": "text",
+          "content": "Views, Materialized Views, and Summary Tables are powerful optimization tools:"
+        },
+        {
+          "id": "conclusion-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Views: Best for simplification, security, always-current data",
+            "Materialized Views: Best for pre-computed aggregations with acceptable staleness",
+            "Summary Tables: Best for maximum performance and custom update logic"
+          ]
+        },
+        {
+          "id": "conclusion-key",
+          "type": "text",
+          "content": "Key success factors:"
+        },
+        {
+          "id": "conclusion-key-list",
+          "type": "list",
+          "variant": "number",
+          "items": [
+            "Understand query patterns and index accordingly",
+            "Use concurrent refresh to avoid blocking reads",
+            "Monitor and maintain your materialized views",
+            "Make conscious trade-offs about freshness vs. performance"
+          ]
+        },
+        {
+          "id": "conclusion-remember",
+          "type": "highlight",
+          "content": "Remember: Index materialized views like production tables, create indexes before loading data, and always use concurrent refresh in production.",
+          "variant": "primary"
+        },
+        {
+          "id": "conclusion-final",
+          "type": "text",
+          "content": "The performance gains are real: turning 22-second queries into 150-millisecond lookups is achievable with proper indexing and refresh strategies."
+        }
+      ]
+    }
+  ]
+}
