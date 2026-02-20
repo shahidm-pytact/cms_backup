@@ -2,7 +2,7 @@
 from typing import Optional, Any
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
 
 
 # Nested Schemas for Content Structure
@@ -127,19 +127,7 @@ class BlogUpdate(BaseModel):
     blog_image: Optional[str] = Field(None, alias="blogImage", description="Blog image URL or base64 data URL")
     meta_description: Optional[str] = Field(None, alias="metaDescription", description="SEO meta description")
     keywords: Optional[list[str]] = Field(None, description="SEO keywords array")
-    status: Optional[str] = Field(None, description="Blog status: draft or published")
     sections: Optional[list[SectionSchema]] = Field(None, description="Blog content sections")
-    
-    @field_validator("status")
-    @classmethod
-    def validate_status(cls, v: Optional[str]) -> Optional[str]:
-        """Validate and normalize status value."""
-        if v is None:
-            return None
-        v_lower = v.lower()
-        if v_lower not in ("draft", "published"):
-            raise ValueError("Status must be 'draft' or 'published'")
-        return v_lower
     
     @field_validator("slug")
     @classmethod
@@ -157,6 +145,91 @@ class BlogUpdate(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
+class BlogPatchUpdate(BaseModel):
+    """Request schema for partial blog update (PATCH).
+    
+    All fields are optional. Update only provided fields:
+    - Omitted fields: Keep existing values
+    - null values: Keep existing values  
+    - Empty string "": Remove field (for images, set to None)
+    - Valid values: Update field
+    
+    For images (authorImg, blogImage):
+    - Omitted/null: Keep existing image
+    - Empty string "": Remove image (set to None)
+    - Base64 data URL or URL: Replace image
+    """
+    
+    slug: Optional[str] = Field(None, min_length=1, max_length=255, description="Unique URL-friendly identifier")
+    title: Optional[str] = Field(None, min_length=1, max_length=500, description="Blog title")
+    subtitle: Optional[str] = Field(None, description="Blog subtitle. Use empty string to remove.")
+    description: Optional[str] = Field(None, description="Blog description. Use empty string to remove.")
+    author: Optional[str] = Field(None, min_length=1, max_length=255, description="Author name")
+    author_img: Optional[str] = Field(None, alias="authorImg", description="Author image URL or base64 data URL. Use empty string to remove.")
+    published_date: Optional[datetime] = Field(None, alias="publishedDate", description="Publication date (ISO 8601). Use null to remove.")
+    reading_time: Optional[str] = Field(None, alias="readingTime", max_length=50, description="Estimated reading time. Use empty string to remove.")
+    hero_quote: Optional[str] = Field(None, alias="heroQuote", description="Hero quote text. Use empty string to remove.")
+    blog_image: Optional[str] = Field(None, alias="blogImage", description="Blog image URL or base64 data URL. Use empty string to remove.")
+    meta_description: Optional[str] = Field(None, alias="metaDescription", description="SEO meta description. Use empty string to remove.")
+    keywords: Optional[list[str]] = Field(None, description="SEO keywords array. Use empty list to remove.")
+    sections: Optional[list[SectionSchema]] = Field(None, description="Blog content sections. If provided, replaces all sections.")
+    
+    @field_validator("slug")
+    @classmethod
+    def validate_slug(cls, v: Optional[str]) -> Optional[str]:
+        """Validate slug format: URL-friendly (lowercase, hyphens)."""
+        if v is None:
+            return None
+        v_lower = v.lower().strip()
+        if not v_lower:
+            raise ValueError("Slug cannot be empty")
+        if not all(c.isalnum() or c in ("-", "_") for c in v_lower):
+            raise ValueError("Slug must contain only lowercase alphanumeric characters, hyphens, and underscores")
+        return v_lower
+    
+    @model_validator(mode="after")
+    def validate_at_least_one_field(self):
+        """Ensure at least one field is provided for update."""
+        # Check if at least one field is not None
+        fields_provided = any([
+            self.slug is not None,
+            self.title is not None,
+            self.subtitle is not None,
+            self.description is not None,
+            self.author is not None,
+            self.author_img is not None,
+            self.published_date is not None,
+            self.reading_time is not None,
+            self.hero_quote is not None,
+            self.blog_image is not None,
+            self.meta_description is not None,
+            self.keywords is not None,
+            self.sections is not None,
+        ])
+        if not fields_provided:
+            raise ValueError("At least one field must be provided for partial update")
+        return self
+    
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class BlogStatusUpdate(BaseModel):
+    """Request schema for updating blog status."""
+    
+    status: str = Field(..., description="Blog status: draft or published")
+    
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, v: str) -> str:
+        """Validate and normalize status value."""
+        v_lower = v.lower()
+        if v_lower not in ("draft", "published"):
+            raise ValueError("Status must be 'draft' or 'published'")
+        return v_lower
+    
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
 class BlogListQuery(BaseModel):
     """Query schema for listing blogs with pagination and filtering."""
     
@@ -164,6 +237,7 @@ class BlogListQuery(BaseModel):
     limit: int = Field(10, ge=1, le=100, alias="limit", description="Number of blogs per page (1-100)")
     sort: str = Field("publishedDate", description="Sort field: publishedDate, title, author, createdAt, updatedAt")
     order: str = Field("desc", description="Sort order: asc or desc")
+    status: Optional[str] = Field(None, description="status draft or publish")
     author: Optional[str] = Field(None, description="Filter by author name (case-insensitive partial match)")
     search: Optional[str] = Field(None, description="Search in title, subtitle, or description (case-insensitive)")
     
@@ -174,6 +248,17 @@ class BlogListQuery(BaseModel):
         v_lower = v.lower()
         if v_lower not in ("asc", "desc"):
             raise ValueError("Order must be 'asc' or 'desc'")
+        return v_lower
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, v: str) -> str:
+        """Validate status."""
+        if v is None:
+            return v
+        v_lower = v.lower()
+        if v_lower not in ("draft", "published"):
+            raise ValueError("Status must be 'draft' or 'published'")
         return v_lower
     
     @field_validator("sort")

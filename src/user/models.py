@@ -90,6 +90,8 @@ class User(Base):
         DateTime(timezone=True),
         nullable=True,
     )
+    google_id: Mapped[str] = mapped_column(String, nullable=True, unique=True)
+    auth_provider: Mapped[str] = mapped_column(String, nullable=True, default="local")
 
     # Audit Fields
     created_at: Mapped[datetime] = mapped_column(

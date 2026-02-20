@@ -37,8 +37,8 @@ async def list_audit_logs(
     ctx: AuthContext = Depends(require_permission("audit_logs.audit_log", "read_all")),
     if_none_match: Optional[str] = Header(None, alias="If-None-Match"),
     api: AuditLogApiDep = Depends(AuditLogApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[AuditLogPaginatedResponse] | FastAPIResponse:
     """List audit logs with pagination, filtering, search, and sorting."""
     result = await api.list_audit_logs(query, ctx, if_none_match)
@@ -63,8 +63,8 @@ async def get_audit_log(
     ctx: AuthContext = Depends(require_permission("audit_logs.audit_log", "read")),
     if_none_match: Optional[str] = Header(None, alias="If-None-Match"),
     api: AuditLogApiDep = Depends(AuditLogApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[AuditLogRead] | FastAPIResponse:
     """Get audit log details including old_values and new_values."""
     result = await api.get_audit_log_by_id(audit_log_id, ctx, if_none_match)

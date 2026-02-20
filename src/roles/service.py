@@ -7,6 +7,7 @@ from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.roles.repository import RoleRepository
+from src.audit_logs.utils import create_audit_log, mask_sensitive_value
 from src.roles.models import Role
 from src.roles.schemas import (
     RoleCreate,
@@ -35,6 +36,7 @@ from src.roles.constants import (
 from src.exceptions import ValidationError
 from src.utils import generate_etag, format_last_modified, set_304_response_headers
 from src.schemas import AuthContext
+import logging
 
 
 def validate_permissions_structure(permissions_json: dict[str, Any]) -> None:
@@ -139,9 +141,39 @@ class RoleService:
         # Save role
         role = await self.repository.create(role)
         
-        # Commit transaction
-        await self.session.commit()
-        await self.session.refresh(role)
+        # Create audit log for role creation (flush only, no commit)
+        try:
+            await create_audit_log(
+                session=self.session,
+                user_id=ctx.user_id,
+                action="create",
+                entity_type="role",
+                entity_id=str(role.id),
+                old_values=None,
+                new_values={
+                    "id": str(role.id),
+                    "slug": role.slug,
+                    "name": role.name,
+                    "status": role.status,
+                    "role_type": role.role_type,
+                    "permissions_json": role.permissions_json,
+                },
+                description=f"Role '{role.name}' created",
+                request=None,
+            )
+        except Exception as e:
+            # Log error but don't fail the role creation
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create audit log for role creation: {str(e)}", exc_info=True)
+            # Don't rollback here - will rollback in main commit if needed
+        
+        # Single commit for both role creation and audit log
+        try:
+            await self.session.commit()
+            await self.session.refresh(role)
+        except Exception:
+            await self.session.rollback()
+            raise
         
         # Return response
         result = RoleRead.model_validate(role)
@@ -334,9 +366,40 @@ class RoleService:
         # Save role
         role = await self.repository.update(role)
         
-        # Commit transaction
-        await self.session.commit()
-        await self.session.refresh(role)
+        # Create audit log for role update (flush only, no commit)
+        try:
+            await create_audit_log(
+                session=self.session,
+                user_id=ctx.user_id,
+                action="update",
+                entity_type="role",
+                entity_id=str(role.id),
+                old_values={
+                    "name": role.name,
+                    "status": role.status,
+                    "permissions_json": role.permissions_json,
+                } if any([data.name, data.permissions_json, data.status]) else None,
+                new_values={
+                    "name": data.name if data.name is not None else role.name,
+                    "status": data.status if data.status is not None else role.status,
+                    "permissions_json": data.permissions_json if data.permissions_json is not None else role.permissions_json,
+                },
+                description=f"Role '{role.name}' updated",
+                request=None,
+            )
+        except Exception as e:
+            # Log error but don't fail the role update
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create audit log for role update: {str(e)}", exc_info=True)
+            # Don't rollback here - will rollback in main commit if needed
+        
+        # Single commit for both role update and audit log
+        try:
+            await self.session.commit()
+            await self.session.refresh(role)
+        except Exception:
+            await self.session.rollback()
+            raise
         
         # Return response
         result = RoleRead.model_validate(role)

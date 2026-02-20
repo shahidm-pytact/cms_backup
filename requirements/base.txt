@@ -21,6 +21,12 @@ python-multipart==0.0.6  # CRITICAL: Required for OAuth2 Form() parameters
 
 # Utils
 python-dotenv==1.0.0
+httpx==0.26.0
 
 # Email
 aiosmtplib==3.0.1
+
+# Google Auth
+google-auth
+google-auth-oauthlib
+requests

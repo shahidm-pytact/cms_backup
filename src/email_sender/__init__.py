@@ -1,4 +1,4 @@
 """Email service module."""
-from src.email.service import EmailService
+from src.email_sender.service import EmailService
 
 __all__ = ["EmailService"]

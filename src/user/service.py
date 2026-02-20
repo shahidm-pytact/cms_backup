@@ -45,7 +45,7 @@ from src.user.constants import (
 from src.utils import generate_etag, format_last_modified, set_304_response_headers
 from src.schemas import AuthContext
 from src.auth.utils import generate_invitation_token, generate_password_reset_token
-from src.email.service import EmailService
+from src.email_sender.service import EmailService
 from src.exceptions import PreconditionRequiredError, PreconditionFailedError
 import logging
 
@@ -112,12 +112,41 @@ class UserService:
             updated_by=ctx.user_id,
         )
         
-        # Save user
-        user = await self.repository.create(user)
-        
-        # Commit transaction
-        await self.session.commit()
-        await self.session.refresh(user)
+        # Create audit log for user invitation
+        try:
+            # Save user
+            user = await self.repository.create(user)
+
+            await create_audit_log(
+                session=self.session,
+                user_id=ctx.user_id,
+                action="invite",
+                entity_type="user",
+                entity_id=str(user.id),
+                old_values=None,
+                new_values={
+                    "id": str(user.id),
+                    "email": user.email,
+                    "name": user.name,
+                    "role_id": str(user.role_id),
+                    "status": user.status,
+                    "invite_token": invite_token,
+                    "invited_at": user.invited_at.isoformat(),
+                    "invite_expires_at": user.invite_expires_at.isoformat(),
+                    "invited_by": str(user.invited_by),
+                },
+                description=f"User '{user.email}' invited",
+                request=request,
+            )
+            
+            # Commit transaction
+            await self.session.commit()
+            await self.session.refresh(user)
+        except Exception as e:
+            await self.session.rollback()
+            logger = logging.getLogger(f"UserService.invite_user.{user.id}")
+            logger.error(f"Failed to create user and audit log for user invitation: {str(e)}", exc_info=True)
+            raise
         
         # Send invitation email asynchronously (failures logged only)
         try:
@@ -409,11 +438,7 @@ class UserService:
         # Save changes
         user = await self.repository.update(user)
         
-        # Commit transaction
-        await self.session.commit()
-        await self.session.refresh(user)
-        
-        # Create audit log
+        # Create audit log (flush only, no commit)
         try:
             # Build old_values and new_values for audit log
             old_values = {}
@@ -443,29 +468,24 @@ class UserService:
                     entity_id=user.id,
                     old_values=old_values if old_values else None,
                     new_values=new_values if new_values else None,
-                    description=f"User '{user.email}' updated",
-                    request=request,
-                )
-                await self.session.commit()
-        except Exception as e:
-            # Log error but don't fail the update operation
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to create audit log for user update: {str(e)}", exc_info=True)
-        
-        # Send email change notification if email was changed
-        if email_changed and old_email:
-            try:
-                await self.email_service.send_email_changed_notification(
-                    to_email=user.email,  # Send to new email
                     to_name=user.name,
                     old_email=old_email,
                     new_email=user.email,
                 )
-            except Exception as e:
-                # Log error but don't fail the update operation
-                # Email failures logged only via audit logs, no retries
-                logger = logging.getLogger(__name__)
-                logger.error(f"Failed to send email change notification to {user.email}: {str(e)}", exc_info=True)
+        except Exception as e:
+            # Log error but don't fail the update operation
+            # Email failures logged only via audit logs, no retries
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to send email change notification to {user.email}: {str(e)}", exc_info=True)
+            # Don't rollback here - will rollback in main commit if needed
+        
+        # Single commit for both user update and audit log
+        try:
+            await self.session.commit()
+            await self.session.refresh(user)
+        except Exception:
+            await self.session.rollback()
+            raise
         
         # Build role info
         role_info = None
@@ -572,41 +592,47 @@ class UserService:
         # Save changes
         user = await self.repository.update(user)
         
-        # Commit transaction
-        await self.session.commit()
-        await self.session.refresh(user)
-        
-        # Create audit log
+        # Create audit log (flush only, no commit)
         try:
             await create_audit_log(
                 session=self.session,
                 user_id=ctx.user_id,
                 action="update_status",
                 entity_type="user",
-                entity_id=user.id,
+                entity_id=str(user.id),
                 old_values={
-                    "status": old_status
+                    "status": old_status,
                 },
                 new_values={
-                    "status": user.status
+                    "status": user.status,
                 },
-                description=f"User '{user.email}' status changed from '{old_status}' to '{user.status}'",
+                description=f"User status changed from {old_status} to {user.status}",
                 request=request,
             )
-            await self.session.commit()
         except Exception as e:
-            # Log error but don't fail the status update operation
             logger = logging.getLogger(__name__)
-            logger.error(f"Failed to create audit log for user status update: {str(e)}", exc_info=True)
+            logger.error(
+                f"Audit log failed during status update: {str(e)}",
+                exc_info=True,
+            )
+            # Don't rollback here - will rollback in main commit if needed
         
-        # Build role info
+        # Single commit for both user update and audit log
+        try:
+            await self.session.commit()
+            await self.session.refresh(user)
+        except Exception:
+            await self.session.rollback()
+            raise
+
+        # Build role info safely
         role_info = None
         if user.role:
-            role_info = RoleInfo(
-                id=user.role.id,
-                name=user.role.name,
-            )
-        
+            role_info = {
+                "id": user.role.id,
+                "name": user.role.name,
+            }
+
         # Build response
         result = UserRead(
             id=user.id,
@@ -615,18 +641,19 @@ class UserService:
             status=user.status,
             role_id=user.role_id,
             role=role_info,
-            invitation_status=None,  # Not included in status update response
+            invitation_status=None,
             created_at=user.created_at,
             updated_at=user.updated_at,
             created_by=user.created_by,
             updated_by=user.updated_by,
         )
-        
-        # Attach ETag for router
+
+        # Attach ETag metadata
         result._etag = generate_etag(user.updated_at)
         result._last_modified = user.updated_at
-        
+
         return result
+
     
     async def get_invitation_status(
         self,
@@ -729,60 +756,45 @@ class UserService:
         # Save changes
         user = await self.repository.update(user)
         
-        # Commit transaction
-        await self.session.commit()
-        await self.session.refresh(user)
-        
-        # Create audit log
+        # Create audit log (flush only, no commit)
         try:
             await create_audit_log(
                 session=self.session,
                 user_id=ctx.user_id,
                 action="resend_invite",
                 entity_type="user",
-                entity_id=user.id,
+                entity_id=str(user.id),
                 old_values={
-                    "invite_token": mask_sensitive_value(user.invite_token) if hasattr(user, 'invite_token') else None,
-                    "invite_expires_at": old_invite_expires_at.isoformat() if old_invite_expires_at else None,
+                    "invite_expires_at": (
+                        old_invite_expires_at.isoformat()
+                        if old_invite_expires_at
+                        else None
+                    ),
                     "status": old_status,
                 },
                 new_values={
                     "invite_token": mask_sensitive_value(invite_token),
                     "invite_expires_at": invite_expires_at.isoformat(),
-                    "invited_at": user.invited_at.isoformat() if user.invited_at else None,
+                    "invited_at": (
+                        user.invited_at.isoformat()
+                        if user.invited_at
+                        else None
+                    ),
                     "status": user.status,
                 },
                 description=f"Invitation resent to user '{user.email}'",
                 request=request,
             )
-            await self.session.commit()
         except Exception as e:
-            # Log error but don't fail the resend operation
             logger = logging.getLogger(__name__)
-            logger.error(f"Failed to create audit log for resend invite: {str(e)}", exc_info=True)
-        
-        # Send invitation email asynchronously (failures logged only)
-        try:
-            await self.email_service.send_invitation_email(
-                to_email=user.email,
-                to_name=user.name,
-                invitation_token=invite_token,
+            logger.error(
+                f"Audit log failed during resend invite: {str(e)}",
+                exc_info=True,
             )
-        except Exception as e:
-            # Log error but don't fail the resend operation
-            # Email failures logged only via audit logs, no retries
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to send invitation email to {user.email}: {str(e)}", exc_info=True)
-        
-        # Build response
-        return ResendInviteResponse(
-            user_id=user.id,
-            email=user.email,
-            status=user.status,
-            invited_at=user.invited_at,
-            invite_expires_at=user.invite_expires_at,
-            invited_by=user.invited_by,
-        )
+
+            # rollback ONLY audit failure
+            await self.session.rollback()
+
     
     async def request_password_reset(
         self,
@@ -829,11 +841,7 @@ class UserService:
         # Save changes
         user = await self.repository.update(user)
         
-        # Commit transaction
-        await self.session.commit()
-        await self.session.refresh(user)
-        
-        # Create audit log
+        # Create audit log (flush only, no commit)
         try:
             await create_audit_log(
                 session=self.session,
@@ -852,11 +860,20 @@ class UserService:
                 description=f"Password reset requested for user '{user.email}'",
                 request=request,
             )
-            await self.session.commit()
         except Exception as e:
             # Log error but don't fail the password reset request
             logger = logging.getLogger(__name__)
             logger.error(f"Failed to create audit log for password reset request: {str(e)}", exc_info=True)
+            # Don't rollback here - will rollback in main commit if needed
+        
+        # Single commit for both user update and audit log
+        try:
+            await self.session.commit()
+            await self.session.refresh(user)
+        except Exception:
+            await self.session.rollback()
+            raise
+            await self.session.rollback()  # CRITICAL: Rollback on error
         
         # Send password reset email asynchronously (failures logged only)
         try:

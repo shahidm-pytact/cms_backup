@@ -1,8 +1,9 @@
 """FastAPI application entry point."""
 import uuid
+from typing import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -19,13 +20,20 @@ from fastapi.exceptions import RequestValidationError
 from fastapi import HTTPException
 from sqlalchemy.exc import DatabaseError
 from src.api.router import api_router
+from src.database import engine
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifespan context manager."""
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Application lifespan context manager.
+    
+    Handles startup and shutdown tasks:
+    - Startup: Any initialization needed
+    - Shutdown: Dispose database engine to close all connections
+    """
     # Startup
     yield
-    # Shutdown
+    # Shutdown: Dispose engine to ensure all connections are properly closed
+    await engine.dispose()
 
 
 # Create FastAPI app
@@ -42,7 +50,7 @@ app = FastAPI(
 
 # Middleware: X-Request-ID
 @app.middleware("http")
-async def add_request_id_middleware(request: Request, call_next):
+async def add_request_id_middleware(request: Request, call_next) -> Response:
     """Add X-Request-ID to request state and response headers."""
     # Generate or get X-Request-ID from header
     request_id = request.headers.get("X-Request-ID")
@@ -88,6 +96,6 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     """Health check endpoint."""
     return {"status": "healthy"}

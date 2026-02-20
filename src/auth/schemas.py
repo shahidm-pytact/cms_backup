@@ -5,8 +5,11 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator, model_validator
 
 
-# Request Schemas
+#Google Login
+class GoogleAuthRequest(BaseModel):
+    token: str
 
+# Login 
 class LoginRequest(BaseModel):
     """Login request schema."""
     
@@ -15,7 +18,7 @@ class LoginRequest(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
-
+# Set Password
 class SetPasswordRequest(BaseModel):
     """Set password request schema (for invitation and password reset)."""
     

@@ -50,8 +50,8 @@ async def list_users(
     ctx: AuthContext = Depends(require_permission("users.user", "read_all")),
     if_none_match: Optional[str] = Header(None, alias="If-None-Match"),
     api: UserApiDep = Depends(UserApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[UserPaginatedResponse] | FastAPIResponse:
     """List users with pagination, filtering, search, and sorting."""
     result = await api.list_users(query, ctx, if_none_match)
@@ -75,8 +75,8 @@ async def invite_user(
     data: UserInvite,
     ctx: AuthContext = Depends(require_permission("users.user", "invite")),
     api: UserApiDep = Depends(UserApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[UserInviteResponse]:
     """Invite a new user with role assignment."""
     result = await api.invite_user(data, ctx, request)
@@ -95,11 +95,11 @@ async def get_user(
     ctx: AuthContext = Depends(require_permission("users.user", "read")),
     if_none_match: Optional[str] = Header(None, alias="If-None-Match"),
     api: UserApiDep = Depends(UserApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[UserRead] | FastAPIResponse:
     """Get user details with invitation status and role information."""
-    result = await api.get_user(str(user_id), ctx, if_none_match)
+    result = await api.get_user(user_id, ctx, if_none_match)
     
     # Handle 304 response
     if isinstance(result, FastAPIResponse):
@@ -120,8 +120,8 @@ async def get_invitation_status(
     user_id: UUID,
     ctx: AuthContext = Depends(require_permission("users.user", "read")),
     api: UserApiDep = Depends(UserApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[InvitationStatusResponse]:
     """Get user invitation status including status, expiry date, and re-invite eligibility."""
     result = await api.get_invitation_status(str(user_id))
@@ -141,8 +141,8 @@ async def update_user(
     ctx: AuthContext = Depends(require_permission("users.user", "update")),
     if_match: Optional[str] = Header(None, alias="If-Match"),
     api: UserApiDep = Depends(UserApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[UserRead]:
     """Update user information (name, email, role_id)."""
     result = await api.update_user(str(user_id), data, ctx, if_match, request)
@@ -162,8 +162,8 @@ async def update_user_status(
     ctx: AuthContext = Depends(require_permission("users.user", "update")),
     if_match: Optional[str] = Header(None, alias="If-Match"),
     api: UserApiDep = Depends(UserApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[UserRead]:
     """Update user status (activate or deactivate)."""
     result = await api.update_user_status(str(user_id), data, ctx, if_match, request)
@@ -181,8 +181,8 @@ async def resend_invite(
     user_id: UUID,
     ctx: AuthContext = Depends(require_permission("users.user", "invite")),
     api: UserApiDep = Depends(UserApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[ResendInviteResponse]:
     """Resend invitation to user with new token."""
     result = await api.resend_invite(str(user_id), ctx, request)
@@ -200,8 +200,8 @@ async def request_password_reset(
     user_id: UUID,
     ctx: AuthContext = Depends(require_permission("users.user", "update")),
     api: UserApiDep = Depends(UserApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[PasswordResetRequestResponse]:
     """Request password reset for a user (generates reset token and sends email)."""
     result = await api.request_password_reset(str(user_id), ctx, request)

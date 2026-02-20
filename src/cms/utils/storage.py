@@ -23,6 +23,22 @@ def is_base64_image(src: str) -> bool:
     return bool(DATA_URL_PATTERN.match(src)) if src else False
 
 
+def contains_base64_data(image_value: str) -> bool:
+    """Check if image value contains base64 data.
+    
+    This function checks for the presence of ';base64,' marker which indicates
+    base64 encoded data. It handles both standard format (data:image/png;base64,...)
+    and custom format (data:/path/to/image;base64,...).
+    
+    Args:
+        image_value: Image value to check
+        
+    Returns:
+        True if value contains ';base64,' marker, False otherwise
+    """
+    return ";base64," in image_value if image_value else False
+
+
 def decode_base64_image(data_url: str) -> Tuple[bytes, str]:
     """
     Decode base64 image data URL.

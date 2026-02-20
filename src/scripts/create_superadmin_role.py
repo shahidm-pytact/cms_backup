@@ -58,7 +58,7 @@ SUPERADMIN_PERMISSIONS = {
 }
 
 
-async def create_superadmin_role():
+async def create_superadmin_role() -> None:
     """Create an superadmin role with the specified permissions."""
     slug = "superadmin"
     name = "superadmin"

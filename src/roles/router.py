@@ -41,8 +41,8 @@ async def list_roles(
     ctx: AuthContext = Depends(require_permission("roles.role", "read_all")),
     if_none_match: Optional[str] = Header(None, alias="If-None-Match"),
     api: RoleApiDep = Depends(RoleApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[RolePaginatedResponse] | FastAPIResponse:
     """List roles with pagination, filtering, search, and sorting."""
     result = await api.list_roles(query, ctx, if_none_match)
@@ -66,8 +66,8 @@ async def create_role(
     data: RoleCreate,
     ctx: AuthContext = Depends(require_permission("roles.role", "create")),
     api: RoleApiDep = Depends(RoleApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[RoleRead]:
     """Create a new custom role with permissions assignment."""
     result = await api.create_role(data, ctx)
@@ -87,8 +87,8 @@ async def get_role(
     ctx: AuthContext = Depends(require_permission("roles.role", "read")),
     if_none_match: Optional[str] = Header(None, alias="If-None-Match"),
     api: RoleApiDep = Depends(RoleApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[RoleRead] | FastAPIResponse:
     """Get specific role details with permissions."""
     result = await api.get_role_by_id(str(role_id), ctx, if_none_match)
@@ -114,8 +114,8 @@ async def update_role(
     ctx: AuthContext = Depends(require_permission("roles.role", "update")),
     if_match: Optional[str] = Header(None, alias="If-Match"),
     api: RoleApiDep = Depends(RoleApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[RoleRead]:
     """Update role information (name, permissions_json, status)."""
     result = await api.update_role(str(role_id), data, ctx, if_match)

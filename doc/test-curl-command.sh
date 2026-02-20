@@ -39,4 +39,4 @@ curl -X POST "${API_BASE_URL}/blogs" \
     }
   ]
 }
-EOF
+

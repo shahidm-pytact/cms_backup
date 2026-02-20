@@ -3,8 +3,11 @@ from typing import Optional, TypeVar
 from datetime import datetime
 from fastapi import Response, Request
 from fastapi.responses import Response as FastAPIResponse
+import httpx
+import logging
 
 from src.schemas import StandardResponse
+from src.config import settings
 
 T = TypeVar("T")
 
@@ -125,3 +128,69 @@ def set_304_response_headers(
         response.headers["Last-Modified"] = format_last_modified(last_modified)
     set_request_id_header(request, response)
     return response
+
+
+async def call_blog_revalidation_webhook(blog_slug: str, event_type: str) -> bool:
+    """Call the blog revalidation webhook after blog operations.
+    
+    Args:
+        blog_slug: The slug of the blog that was created/updated/deleted
+        event_type: The type of event ("created", "updated", "deleted")
+        
+    Returns:
+        True if webhook call was successful, False otherwise
+    """
+    if not settings.blog_revalidation_webhook_secret:
+        logger = logging.getLogger(__name__)
+        logger.warning("Blog revalidation webhook secret not configured, skipping webhook call")
+        return False
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            # Use different headers based on event type
+            headers = {
+                "Content-Type": "application/json"
+            }
+            
+            if event_type == "updated":
+                headers["x-webhook-secret"] = settings.blog_revalidation_webhook_secret
+            else:
+                headers["Authorization"] = f"Bearer {settings.blog_revalidation_webhook_secret}"
+            
+            response = await client.post(
+                settings.blog_revalidation_webhook_url,
+                headers=headers,
+                json={"slug": blog_slug, "event_type": event_type},
+                timeout=10.0
+            )
+            
+            if response.status_code == 200:
+                logger = logging.getLogger(__name__)
+                logger.info(f"Blog revalidation webhook called successfully for slug: {blog_slug}, event: {event_type}")
+                return True
+            else:
+                logger = logging.getLogger(__name__)
+                logger.error(f"Blog revalidation webhook failed with status {response.status_code}: {response.text}")
+                return False
+                
+    except Exception as e:
+        logger = logging.getLogger(__name__)
+        logger.error(f"Failed to call blog revalidation webhook for slug {blog_slug}, event {event_type}: {str(e)}")
+        return False
+
+
+async def trigger_blog_webhook(result, slug: str, event_type: str) -> None:
+    """Centralized function to trigger webhook for blog operations.
+    
+    Args:
+        result: API response object
+        slug: Blog slug
+        event_type: Event type ("created", "updated", "deleted")
+    """
+    if result and hasattr(result, 'data') and result.data:
+        try:
+            await call_blog_revalidation_webhook(slug, event_type)
+        except Exception as e:
+            # Log webhook error but don't fail response
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to call blog revalidation webhook: {str(e)}", exc_info=True)

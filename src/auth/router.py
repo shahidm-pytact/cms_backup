@@ -3,12 +3,9 @@ from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, Form, Header, HTTPException, Request, Response, status
 from fastapi.responses import Response as FastAPIResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas import StandardResponse, AuthContext
-from src.database import get_session
-from src.auth.dependencies import get_auth_context_from_token
-from src.auth.service import AuthService
+from src.auth.dependencies import get_auth_context_from_token, AuthApiDep
 from src.auth.schemas import (
     LoginRequest,
     SetPasswordRequest,
@@ -19,6 +16,7 @@ from src.auth.schemas import (
     SetPasswordResponse,
     ResetPasswordResponse,
     UserContextResponse,
+    GoogleAuthRequest
 )
 from src.auth.constants import (
     SUCCESS_TOKEN_GENERATED,
@@ -38,6 +36,7 @@ from src.auth.exceptions import (
 )
 from src.utils import set_etag_headers_and_return, set_request_id_header, set_304_response_headers
 from src.auth.documentations.auth_api_doc import AuthApiDocs
+from src.auth.google_auth import verify_google_token
 
 router = APIRouter(
     prefix="/auth",
@@ -45,44 +44,34 @@ router = APIRouter(
 )
 
 
-# API Dependency Class
-class AuthApiDep:
-    """API dependency for auth operations."""
-    
-    def __init__(self, session: AsyncSession = Depends(get_session)):
-        self.service = AuthService(session)
-        self.session = session
-    
-    async def login(self, login_data: LoginRequest) -> LoginResponse:
-        """Login user."""
-        return await self.service.login(login_data)
-    
-    async def accept_invitation(self, token: str) -> InvitationAcceptResponse:
-        """Accept invitation."""
-        return await self.service.accept_invitation(token)
-    
-    async def set_password_from_invitation(
-        self, token: str, password_data: SetPasswordRequest
-    ) -> SetPasswordResponse:
-        """Set password from invitation."""
-        return await self.service.set_password_from_invitation(token, password_data)
-    
-    async def request_password_reset(self, reset_data: ResetPasswordRequest) -> None:
-        """Request password reset."""
-        return await self.service.request_password_reset(reset_data)
-    
-    async def reset_password(
-        self, token: str, password_data: SetPasswordRequest
-    ) -> ResetPasswordResponse:
-        """Reset password."""
-        return await self.service.reset_password(token, password_data)
-    
-    async def get_user_context(self, user_id: UUID) -> UserContextResponse:
-        """Get user context."""
-        return await self.service.get_user_context(user_id)
-
-
 # Endpoints
+@router.post("/google")
+async def google_login(
+    payload: GoogleAuthRequest,
+    api: AuthApiDep = Depends(AuthApiDep),
+    request: Request = None,  # FastAPI injects Request automatically
+):
+    """Authenticate user with Google token."""
+    # Verify Google token
+    idinfo = verify_google_token(payload.token)
+    
+    email = idinfo.get("email")
+    google_id = idinfo.get("sub")
+    
+    if not email or not google_id:
+        raise HTTPException(status_code=400, detail="Invalid Google token")
+    
+    # Restrict login to @pytact.com emails only
+    if not email.endswith("@pytact.com"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Only @pytact.com email addresses are allowed."
+        )
+    
+    # Handle Google authentication (business logic in service)
+    tokens = await api.google_login(email, google_id, request)
+    
+    return tokens
 
 @router.post(
     "/token",
@@ -93,9 +82,9 @@ class AuthApiDep:
 async def token(
     username: str = Form(...),  # OAuth2 uses 'username' but we treat it as email
     password: str = Form(...),
-    session: AsyncSession = Depends(get_session),
-    request: Request = None,
-    response: Response = None,
+    api: AuthApiDep = Depends(AuthApiDep),
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> dict:
     """OAuth2-compatible token endpoint for Swagger UI authorization.
     
@@ -112,12 +101,13 @@ async def token(
     - Handles all authentication errors with OAuth2-compatible format
     - Sets WWW-Authenticate header on errors
     - Sets X-Request-ID header on all responses
+    
+    Note: All exception handling and logging is done in the service layer.
+    Router only formats HTTP responses (OAuth2 compliance).
     """
     try:
-        # Use service directly for authentication
-        service = AuthService(session)
-        user = await service.authenticate_user(username, password)
-        tokens = await service.create_tokens(user)
+        # Generate OAuth2 token (business logic and error handling in service)
+        tokens = await api.generate_oauth2_token(username, password, request)
         
         # Return OAuth2-compatible response (plain dict, not StandardResponse)
         # OAuth2 requires: access_token, token_type
@@ -137,18 +127,16 @@ async def token(
         return response_data
         
     except (InvalidCredentialsError, InactiveUserError, InactiveRoleError):
-        # CRITICAL: Return OAuth2-compatible error for Swagger UI
-        # Use generic message to avoid information leakage
-        # All authentication errors return same message for security
-        # HTTPException will be handled by http_exception_handler which sets X-Request-ID
+        # All exceptions are already logged in service layer
+        # Router only formats HTTP response for OAuth2 compliance
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    except Exception as e:
-        # CRITICAL: Catch any unexpected exceptions and return OAuth2-compatible error
-        # This prevents exposing internal errors and maintains OAuth2 compliance
+    except Exception:
+        # All exceptions are already logged in service layer
+        # Router only formats HTTP response for OAuth2 compliance
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
@@ -166,8 +154,8 @@ async def token(
 async def login(
     login_data: LoginRequest,
     api: AuthApiDep = Depends(AuthApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[LoginResponse]:
     """Authenticate user with email and password."""
     result = await api.login(login_data)
@@ -184,12 +172,16 @@ async def login(
 async def logout(
     ctx: AuthContext = Depends(get_auth_context_from_token),
     api: AuthApiDep = Depends(AuthApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[dict]:
     """Logout and invalidate user session/token."""
     # TODO: Implement token blacklist or JWT ID revocation if needed
     # For now, just return success (stateless JWT tokens)
+    
+    # Handle logout (business logic in service)
+    await api.logout(ctx.user_id, request)
+    
     return set_etag_headers_and_return(response, None, SUCCESS_LOGOUT, request)
 
 
@@ -203,8 +195,8 @@ async def logout(
 async def accept_invitation(
     token: str,
     api: AuthApiDep = Depends(AuthApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[InvitationAcceptResponse]:
     """Accept invitation (validate token and mark invitation as accepted)."""
     result = await api.accept_invitation(token)
@@ -222,8 +214,8 @@ async def set_password(
     token: str,
     password_data: SetPasswordRequest,
     api: AuthApiDep = Depends(AuthApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[SetPasswordResponse]:
     """Set initial password after accepting invitation."""
     result = await api.set_password_from_invitation(token, password_data)
@@ -240,8 +232,8 @@ async def set_password(
 async def request_password_reset(
     reset_data: ResetPasswordRequest,
     api: AuthApiDep = Depends(AuthApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[dict]:
     """Request password reset (generates reset token and sends email)."""
     await api.request_password_reset(reset_data)
@@ -261,8 +253,8 @@ async def reset_password(
     token: str,
     password_data: SetPasswordRequest,
     api: AuthApiDep = Depends(AuthApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[ResetPasswordResponse]:
     """Reset user password using reset token."""
     result = await api.reset_password(token, password_data)
@@ -280,8 +272,8 @@ async def get_me(
     ctx: AuthContext = Depends(get_auth_context_from_token),
     if_none_match: Optional[str] = Header(None, alias="If-None-Match"),
     api: AuthApiDep = Depends(AuthApiDep),
-    request: Request = None,
-    response: Response = None,
+    request: Request = None,  # FastAPI injects Request automatically
+    response: Response = None,  # FastAPI injects Response automatically
 ) -> StandardResponse[UserContextResponse] | FastAPIResponse:
     """Retrieve current user's details and context."""
     result = await api.get_user_context(ctx.user_id)

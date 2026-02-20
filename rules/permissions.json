@@ -4,6 +4,12 @@
   
   {
     "modules": {
+        "users": {
+            "user": {
+                "read": true,
+                "update": true,
+            }
+        },
        "blogs": {
             "blog": {
                 "create": true,

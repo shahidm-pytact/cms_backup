@@ -6,8 +6,8 @@ from email.mime.multipart import MIMEMultipart
 
 import aiosmtplib
 
-from src.email.config import email_settings
-from src.email.template_loader import EmailTemplateLoader
+from src.email_sender.config import email_settings
+from src.email_sender.template_loader import EmailTemplateLoader
 
 logger = logging.getLogger(__name__)
 

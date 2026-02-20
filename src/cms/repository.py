@@ -70,6 +70,7 @@ class BlogRepository:
         limit: int,
         sort: str = "publishedDate",
         order: str = "desc",
+        status: Optional[str] = None,
         author: Optional[str] = None,
         search: Optional[str] = None,
     ) -> tuple[list[Blog], int]:
@@ -102,7 +103,14 @@ class BlogRepository:
                 )
             )
         
-        # Apply author filter
+        # Apply status filter
+        if status:
+            status_pattern = f"%{status}%"
+            query = query.where(
+                Blog.status.ilike(status_pattern)
+            )
+        
+                # Apply author filter
         if author:
             author_pattern = f"%{author}%"
             query = query.where(

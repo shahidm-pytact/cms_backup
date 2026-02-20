@@ -14,6 +14,8 @@ SUCCESS_BLOG_CREATED = "Blog created successfully"
 SUCCESS_BLOG_RETRIEVED = "Blog retrieved successfully"
 SUCCESS_BLOGS_RETRIEVED = "Blogs retrieved successfully"
 SUCCESS_BLOG_UPDATED = "Blog updated successfully"
+SUCCESS_BLOG_PATCHED = "Blog partially updated successfully"
+SUCCESS_BLOG_STATUS_UPDATED = "Blog status updated successfully"
 SUCCESS_BLOG_DELETED = "Blog deleted successfully"
 
 # Error Codes

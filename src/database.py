@@ -32,6 +32,16 @@ class Base(DeclarativeBase):
 
 # Dependency for FastAPI routes
 async def get_session() -> AsyncSession:
-    """Get database session for dependency injection."""
+    """Get database session for dependency injection.
+    
+    Uses async context manager to ensure proper session cleanup:
+    - Session is automatically closed when request completes
+    - Session is properly closed even if an exception occurs
+    - FastAPI's dependency injection system ensures cleanup in all error scenarios
+    - The async context manager ensures session.close() is called even on exceptions
+    
+    Yields:
+        AsyncSession: Database session for the current request
+    """
     async with AsyncSessionLocal() as session:
         yield session

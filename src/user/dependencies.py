@@ -36,13 +36,13 @@ class UserApiDep:
     
     async def get_user(
         self,
-        user_id: str,
+        user_id: UUID,
         ctx: AuthContext,
         if_none_match: str | None = None,
     ):
         """Get user by ID."""
         return await self.service.get_user(
-            UUID(user_id),
+            user_id,
             if_none_match,
         )
     

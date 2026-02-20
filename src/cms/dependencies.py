@@ -9,6 +9,8 @@ from src.cms.service import BlogService
 from src.cms.schemas import (
     BlogCreate,
     BlogUpdate,
+    BlogPatchUpdate,
+    BlogStatusUpdate,
     BlogListQuery,
 )
 
@@ -47,13 +49,14 @@ class BlogApiDep:
     async def list_blogs(
         self,
         query: BlogListQuery,
-        ctx: AuthContext,
         if_none_match: Optional[str] = None,
+        ctx: Optional[AuthContext] = None,
     ):
         """List blogs with pagination."""
         return await self.service.list_blogs(
             query,
             if_none_match,
+            ctx,
         )
     
     async def update_blog(
@@ -67,6 +70,36 @@ class BlogApiDep:
         return await self.service.update_blog(
             slug,
             data,
+            ctx,
+            request,
+        )
+    
+    async def patch_blog(
+        self,
+        slug: str,
+        data: BlogPatchUpdate,
+        ctx: AuthContext,
+        request: Optional[Request] = None,
+    ):
+        """Partially update blog."""
+        return await self.service.patch_blog(
+            slug,
+            data,
+            ctx,
+            request,
+        )
+    
+    async def update_blog_status(
+        self,
+        slug: str,
+        data: BlogStatusUpdate,
+        ctx: AuthContext,
+        request: Optional[Request] = None,
+    ):
+        """Update blog status."""
+        return await self.service.update_blog_status(
+            slug,
+            data.status,
             ctx,
             request,
         )

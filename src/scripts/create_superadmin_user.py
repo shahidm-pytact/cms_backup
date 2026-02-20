@@ -59,7 +59,7 @@ async def get_or_create_superadmin_role(session: AsyncSession) -> Role:
     return superadmin_role
 
 
-async def create_superadmin_user():
+async def create_superadmin_user() -> None:
     """Create a superadmin user with the specified credentials."""
     email = "pytact@yopmail.com"
     password = "Admin@123"
