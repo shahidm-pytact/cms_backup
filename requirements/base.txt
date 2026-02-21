@@ -23,6 +23,9 @@ python-multipart==0.0.6  # CRITICAL: Required for OAuth2 Form() parameters
 python-dotenv==1.0.0
 httpx==0.26.0
 
+# Image Processing & Validation
+Pillow==10.2.0
+
 # Email
 aiosmtplib==3.0.1
 
