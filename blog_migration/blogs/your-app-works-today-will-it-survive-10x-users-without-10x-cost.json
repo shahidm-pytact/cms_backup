@@ -1,0 +1,249 @@
+{
+  "metadata": {
+    "slug": "your-app-works-today-will-it-survive-10x-users-without-10x-cost",
+    "title": "Your App Works Today. Will It Survive 10x Users Without 10x Cost?",
+    "subtitle": "The hidden cost of shallow engineering decisions. A real-world story about why scaling isn't just about handling more users—it's about doing it affordably.",
+    "description": "The hidden cost of shallow engineering decisions. A real-world story about why scaling isn't just about handling more users—it's about doing it affordably.",
+    "author": "Kaushal Khokhar",
+    "authorImg": "https://media.licdn.com/dms/image/v2/D4D03AQFGxBtybrn-RQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1728039772945?e=2147483647&v=beta&t=ndiipYzFWpMNnIv5wKyG8wXD_a9wXMt2HYKQK5X8FrM",
+    "publishedDate": "2026-01-09T10:00:00.000Z",
+    "readingTime": "7 min read",
+    "heroQuote": "Can this application scale with users, without burning money on server costs?",
+    "blogImage": "/images/blog/cloud-economics-scaling.webp",
+    "metaDescription": "Learn why fast code doesn't equal smart architecture. Discover how to design systems that scale affordably, with real-world examples of cost optimization using Redis and engineering best practices.",
+    "keywords": [
+      "cost optimization",
+      "scaling",
+      "Redis",
+      "engineering architecture",
+      "infrastructure costs",
+      "system scaling",
+      "AWS costs",
+      "backend optimization",
+      "production systems",
+      "engineering depth"
+    ]
+  },
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "blocks": [
+        {
+          "id": "intro-1",
+          "type": "text",
+          "content": "I've seen a software system that burned around $10,000 per month on AWS. Not because it was doing something revolutionary. Not because traffic was insane. But because the engineering decisions were shallow."
+        },
+        {
+          "id": "intro-2",
+          "type": "text",
+          "content": "The client kept paying the infrastructure bill, month after month, until they were forced to shut down the development environment. And the worst part? Everyone was happy earlier… because the application was \"working\"."
+        },
+        {
+          "id": "intro-3",
+          "type": "text",
+          "content": "This is not a story. This is reality from one of my past projects. And it happened for one simple reason: Nobody asked: what if the request load increases by 5x?"
+        }
+      ]
+    },
+    {
+      "id": "main-content-ai-cost-scaling",
+      "title": "AI can speed up development, but can it protect you from cost?",
+      "blocks": [
+        {
+          "id": "ai-speed-1",
+          "type": "text",
+          "content": "Everyone wants rapid development using AI. And they deserve it. AI has proven that a person or team can produce 10x outcomes when used correctly. I agree with it completely. In fact, I've shared a case study on how we automated the idea to development phases using AI with humans in the loop, including the process, challenges, fixes, and results.",
+          "links": [
+            {
+              "text": "idea to development",
+              "url": "https://pytact.com/caseStudy/case-study-01?from=list",
+              "external": true
+            }
+          ]
+        },
+        {
+          "id": "ai-speed-2",
+          "type": "text",
+          "content": "But I also believe something strongly: Fast code is not equal to smart architecture."
+        },
+        {
+          "id": "key-question",
+          "type": "highlight",
+          "content": "The real question is not just \"can this prototype run\". The real question is: Can this application scale with users, without burning money on server costs?",
+          "variant": "primary"
+        },
+        {
+          "id": "scaling-definition",
+          "type": "text",
+          "content": "Because scaling is not only about handling more users. Scaling is about handling more users while keeping cost under control."
+        }
+      ]
+    },
+    {
+      "id": "main-content-common-mistake",
+      "title": "The most common mistake: scaling by upgrading machines",
+      "blocks": [
+        {
+          "id": "mistake-1",
+          "type": "text",
+          "content": "Most developers ignore the minute details and simply increase machine size. Because yes, it's the easiest way. In the beginning, the client doesn't notice anything. The app is working. Response time is okay. Everything looks good."
+        },
+        {
+          "id": "mistake-2",
+          "type": "text",
+          "content": "But that approach becomes expensive later, because cost grows linearly with demand. More users → more requests → more DB load → bigger servers → bigger bills. And then teams keep \"solving\" the same problem by upgrading again."
+        },
+        {
+          "id": "mistake-insight",
+          "type": "highlight",
+          "content": "It's not scaling. It's patching.",
+          "variant": "accent"
+        }
+      ]
+    },
+    {
+      "id": "main-content-engineering-depth",
+      "title": "Where engineering depth actually wins",
+      "blocks": [
+        {
+          "id": "engineering-1",
+          "type": "text",
+          "content": "This is where in-depth engineering beats \"functional working\" development. Functional working is step one. Engineering is what decides whether that working app stays affordable when usage grows."
+        },
+        {
+          "id": "engineering-2",
+          "type": "text",
+          "content": "Real value comes from going deeper. That's where real diamonds shine."
+        }
+      ]
+    },
+    {
+      "id": "main-content-practical-example",
+      "title": "A practical example from our backend",
+      "blocks": [
+        {
+          "id": "example-1",
+          "type": "text",
+          "content": "Let me share a simple example from how we approach backend architecture. We use Redis as ACM (Access Control Management) as a single point of contact for user permissions.",
+          "links": [
+            {
+              "text": "Redis as ACM (Access Control Management)",
+              "url": "https://pytact.com/blog/designing-cache-first-rbac-acm?from=list",
+              "external": true
+            }
+          ]
+        },
+        {
+          "id": "example-2",
+          "type": "text",
+          "content": "At the initial stage of a product, we usually don't need a separate permission management service. The user base is limited. The product still needs to pass the product-market fit phase. Overengineering at the beginning also burns money. So we start lean. We deploy a Redis container on the same machine where the API is hosted. But we design it in a way that later it can be hosted as a standalone service when the user base grows."
+        },
+        {
+          "id": "example-balance",
+          "type": "highlight",
+          "content": "That balance matters: don't overengineer early, don't block scaling later",
+          "variant": "primary"
+        },
+        {
+          "id": "example-3",
+          "type": "text",
+          "content": "You can read my blog article which articulates our backend system in more detail.",
+          "links": [
+            {
+              "text": "blog article",
+              "url": "https://pytact.com/blog/backend-stack-production?from=list",
+              "external": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-redis-benefits",
+      "title": "Why Redis can reduce cost and improve performance",
+      "blocks": [
+        {
+          "id": "redis-problem",
+          "type": "text",
+          "content": "Without Redis, a common pattern looks like this: Every request hits the database to validate permissions. As traffic grows, DB round trips grow. DB load grows. Latency grows. Then infra cost grows."
+        },
+        {
+          "id": "redis-solution",
+          "type": "text",
+          "content": "Redis helps because repeated permission checks can be served from cache instead of hitting the database every time. That reduces DB pressure and helps the system stay stable as request volume increases."
+        },
+        {
+          "id": "redis-results",
+          "type": "text",
+          "content": "And this isn't just theory. Empirical results reported that using a Redis caching layer compared to direct database querying achieved:"
+        },
+        {
+          "id": "redis-metrics",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Response Time: Reduced by 63.78% on average",
+            "Throughput: Increased by 32.84% (requests per second)"
+          ]
+        },
+        {
+          "id": "redis-reference",
+          "type": "text",
+          "content": "Reference: Julastri & Prasetyo, 2025. ",
+          "links": [
+            {
+              "text": "Julastri & Prasetyo, 2025",
+              "url": "https://jurnaldinarek.id/index.php/jidr/article/view/12",
+              "external": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-redis-engineering-decisions",
+      "title": "Redis is not just \"use it or don't use it\"",
+      "blocks": [
+        {
+          "id": "redis-decisions-1",
+          "type": "text",
+          "content": "The decision is not limited to using Redis. Engineering depth also means deciding:"
+        },
+        {
+          "id": "redis-decisions-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "what Redis data structure to use (string, hash, set, JSON, etc.)",
+            "what to cache and what not to cache",
+            "TTL strategy",
+            "invalidation strategy",
+            "memory growth control"
+          ]
+        },
+        {
+          "id": "redis-decisions-2",
+          "type": "text",
+          "content": "Redis is powerful, but using it blindly can also create problems. The system becomes truly scalable when these decisions are intentional."
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "title": "Moral of the story",
+      "blocks": [
+        {
+          "id": "conclusion-1",
+          "type": "text",
+          "content": "Never blindly trust \"functional working.\" Ask a better question: Can this software handle 10x users with minimal or zero increase in server cost?"
+        },
+        {
+          "id": "conclusion-2",
+          "type": "text",
+          "content": "AI can replace coders. But it does not replace engineers who design systems to scale securely with minimal cost overhead."
+        }
+      ]
+    }
+  ]
+}

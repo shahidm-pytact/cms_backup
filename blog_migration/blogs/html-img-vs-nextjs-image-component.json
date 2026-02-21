@@ -1,0 +1,504 @@
+{
+  "metadata": {
+    "slug": "html-img-vs-nextjs-image-component",
+    "title": "HTML img vs Next.js Image: A Practical Comparison",
+    "subtitle": "Image optimization is one of those topics most developers think they understand until a slow page, layout shift, or poor Core Web Vitals score forces them to look deeper.",
+    "description": "Image optimization is one of those topics most developers think they understand until a slow page, layout shift, or poor Core Web Vitals score forces them to look deeper.",
+    "author": "Mayur Tank.",
+    "authorImg": "/images/mayurProfile.webp",
+    "publishedDate": "2026-01-16T10:00:00.000Z",
+    "readingTime": "9 min read",
+    "blogImage": "/images/blog/nextvshtmlBlog.webp",
+    "metaDescription": "Learn the practical differences between HTML img tag and Next.js Image component. Discover how image optimization impacts performance, UX, SEO, and Core Web Vitals with real-world experience and comparisons.",
+    "keywords": ["image optimization", "Next.js Image", "HTML img", "frontend performance", "Core Web Vitals", "image lazy loading", "layout shift", "CLS", "LCP", "frontend optimization", "Next.js", "web performance"]
+  },
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "blocks": [
+        {
+          "id": "intro-1",
+          "type": "text",
+          "content": "Image optimization is one of those topics most developers think they understand until a slow page, layout shift, or poor Core Web Vitals score forces them to look deeper."
+        },
+        {
+          "id": "intro-2",
+          "type": "text",
+          "content": "I wrote this blog after actually using both the normal HTML img tag and the Next.js Image component in real projects, facing real problems: slow page loads, re-renders, layout shifts, and unnecessary bandwidth usage."
+        },
+        {
+          "id": "intro-3",
+          "type": "text",
+          "content": "This is not a marketing comparison. It's a practical, experience-driven refinement of what changes when you move from plain HTML images to Next.js image optimization and where developers often misunderstand both."
+        }
+      ]
+    },
+    {
+      "id": "main-content-what-this-blog-is-about",
+      "title": "What This Blog Is About",
+      "blocks": [
+        {
+          "id": "about-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Why images silently impact performance, UX, and SEO",
+            "How I used both img and Next.js Image in production",
+            "What problems I faced with normal images",
+            "What Next.js actually solves and what it doesn't",
+            "Practical differences that matter beyond documentation"
+          ]
+        },
+        {
+          "id": "about-conclusion",
+          "type": "text",
+          "content": "If you're building any modern website or product, images are not optional assets. They are performance-critical resources."
+        }
+      ]
+    },
+    {
+      "id": "main-content-why-images-matter",
+      "title": "Why Images Matter More Than Most Developers Realize",
+      "blocks": [
+        {
+          "id": "images-matter-1",
+          "type": "text",
+          "content": "Images are often the heaviest resources on a webpage."
+        },
+        {
+          "id": "images-matter-2",
+          "type": "text",
+          "content": "When images are poorly handled:"
+        },
+        {
+          "id": "images-matter-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Pages load slower",
+            "Layout shifts occur",
+            "User experience drops",
+            "SEO and Core Web Vitals suffer"
+          ]
+        },
+        {
+          "id": "images-matter-3",
+          "type": "text",
+          "content": "The problem is not that developers ignore performance. It's that many don't realize images alone can cause most of the damage."
+        },
+        {
+          "id": "images-matter-4",
+          "type": "text",
+          "content": "Better image handling directly improves:"
+        },
+        {
+          "id": "images-matter-metrics",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "First Contentful Paint (FCP)",
+            "Largest Contentful Paint (LCP)",
+            "Cumulative Layout Shift (CLS)",
+            "Overall SEO ranking"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-html-img-tag",
+      "title": "Normal HTML img Tag: Simple, Powerful, but Manual",
+      "blocks": [
+        {
+          "id": "html-img-1",
+          "type": "text",
+          "content": "The HTML img tag is simple and flexible. But simplicity comes with responsibility."
+        },
+        {
+          "id": "html-img-2",
+          "type": "text",
+          "content": "What You Get by Default"
+        },
+        {
+          "id": "html-img-defaults",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Direct control over source",
+            "Browser-native rendering",
+            "No framework dependency"
+          ]
+        },
+        {
+          "id": "html-img-3",
+          "type": "text",
+          "content": "What You Don't Get Automatically"
+        },
+        {
+          "id": "html-img-missing",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Lazy loading (unless explicitly added)",
+            "Responsive resizing",
+            "Image format optimization",
+            "Layout stability guarantees"
+          ]
+        },
+        {
+          "id": "html-img-4",
+          "type": "text",
+          "content": "Every optimization must be manually implemented, and most projects stop halfway."
+        }
+      ]
+    },
+    {
+      "id": "main-content-nextjs-image",
+      "title": "Next.js Image Component: Opinionated but Optimized",
+      "blocks": [
+        {
+          "id": "nextjs-image-1",
+          "type": "text",
+          "content": "Next.js introduces Image not as a replacement for img, but as a performance-focused abstraction."
+        },
+        {
+          "id": "nextjs-image-2",
+          "type": "text",
+          "content": "It makes strong assumptions in favor of:"
+        },
+        {
+          "id": "nextjs-image-assumptions",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Performance",
+            "Stability",
+            "SEO",
+            "Modern delivery formats"
+          ]
+        },
+        {
+          "id": "nextjs-image-3",
+          "type": "text",
+          "content": "This opinionated approach removes many mistakes developers commonly make."
+        }
+      ]
+    },
+    {
+      "id": "main-content-key-differences",
+      "title": "Key Differences That Actually Matter",
+      "blocks": [
+        {
+          "id": "differences-intro",
+          "type": "text",
+          "content": "Let's examine the practical differences between HTML img and Next.js Image component."
+        }
+      ]
+    },
+    {
+      "id": "main-content-difference-1-lazy-loading",
+      "title": "1. Lazy Loading",
+      "blocks": [
+        {
+          "id": "lazy-comparison",
+          "type": "comparison",
+          "title": "Lazy Loading Comparison",
+          "options": {
+            "labelA": "HTML img",
+            "labelB": "Next.js Image"
+          },
+          "items": [
+            {
+              "feature": "Lazy loading by default",
+              "optionA": false,
+              "optionB": true
+            },
+            {
+              "feature": "Manual configuration required",
+              "optionA": true,
+              "optionB": false
+            },
+            {
+              "feature": "Loads only when near viewport",
+              "optionA": "Only if loading=\"lazy\" added",
+              "optionB": true
+            }
+          ]
+        },
+        {
+          "id": "lazy-conclusion",
+          "type": "text",
+          "content": "Lazy loading is not just a feature. It's a performance strategy. Next.js enforces it."
+        }
+      ]
+    },
+    {
+      "id": "main-content-difference-2-responsiveness",
+      "title": "2. Responsiveness",
+      "blocks": [
+        {
+          "id": "responsive-comparison",
+          "type": "comparison",
+          "title": "Responsiveness Comparison",
+          "options": {
+            "labelA": "HTML img",
+            "labelB": "Next.js Image"
+          },
+          "items": [
+            {
+              "feature": "Automatic responsive sizes",
+              "optionA": false,
+              "optionB": true
+            },
+            {
+              "feature": "Manual CSS/Tailwind required",
+              "optionA": true,
+              "optionB": false
+            },
+            {
+              "feature": "Serves device-appropriate resolution",
+              "optionA": false,
+              "optionB": true
+            },
+            {
+              "feature": "Multiple breakpoint handling",
+              "optionA": "Manual",
+              "optionB": "Automatic"
+            }
+          ]
+        },
+        {
+          "id": "responsive-conclusion",
+          "type": "text",
+          "content": "This alone saves bandwidth and improves mobile experience."
+        }
+      ]
+    },
+    {
+      "id": "main-content-difference-3-optimization",
+      "title": "3. Image Optimization & Delivery",
+      "blocks": [
+        {
+          "id": "optimization-comparison",
+          "type": "comparison",
+          "title": "Image Optimization Comparison",
+          "options": {
+            "labelA": "HTML img",
+            "labelB": "Next.js Image"
+          },
+          "items": [
+            {
+              "feature": "Automatic resizing",
+              "optionA": false,
+              "optionB": true
+            },
+            {
+              "feature": "Image compression",
+              "optionA": false,
+              "optionB": true
+            },
+            {
+              "feature": "Format conversion (WebP)",
+              "optionA": false,
+              "optionB": true
+            },
+            {
+              "feature": "Device-specific file sizes",
+              "optionA": false,
+              "optionB": true
+            }
+          ]
+        },
+        {
+          "id": "optimization-conclusion",
+          "type": "text",
+          "content": "The same image becomes lighter without any extra effort."
+        }
+      ]
+    },
+    {
+      "id": "main-content-difference-4-layout-stability",
+      "title": "4. Layout Stability (Visual Stability)",
+      "blocks": [
+        {
+          "id": "layout-1",
+          "type": "text",
+          "content": "One of the biggest real-world problems I faced was layout shift."
+        },
+        {
+          "id": "layout-comparison",
+          "type": "comparison",
+          "title": "Layout Stability Comparison",
+          "options": {
+            "labelA": "HTML img",
+            "labelB": "Next.js Image"
+          },
+          "items": [
+            {
+              "feature": "Requires width & height",
+              "optionA": "Optional (often forgotten)",
+              "optionB": "Required (enforced)"
+            },
+            {
+              "feature": "Reserves space before load",
+              "optionA": false,
+              "optionB": true
+            },
+            {
+              "feature": "Prevents layout shift (CLS)",
+              "optionA": "Only if dimensions provided",
+              "optionB": true
+            },
+            {
+              "feature": "Fill option for containers",
+              "optionA": false,
+              "optionB": true
+            }
+          ]
+        },
+        {
+          "id": "layout-conclusion",
+          "type": "text",
+          "content": "This is where Next.js genuinely improves perceived quality."
+        }
+      ]
+    },
+    {
+      "id": "main-content-difference-5-seo-accessibility",
+      "title": "5. SEO & Accessibility",
+      "blocks": [
+        {
+          "id": "seo-1",
+          "type": "text",
+          "content": "Regardless of framework, some rules remain universal:"
+        },
+        {
+          "id": "seo-rules",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Always add alt text",
+            "Use meaningful descriptions",
+            "Avoid decorative images without context"
+          ]
+        },
+        {
+          "id": "seo-2",
+          "type": "text",
+          "content": "Next.js doesn't replace good practices, but it enforces discipline by design."
+        }
+      ]
+    },
+    {
+      "id": "main-content-reality-check",
+      "title": "Important Reality Check (Where I Don't Fully Agree With the Hype)",
+      "blocks": [
+        {
+          "id": "reality-1",
+          "type": "text",
+          "content": "Next.js Image is not magic."
+        },
+        {
+          "id": "reality-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "It adds abstraction complexity",
+            "Requires configuration (next.config.js)",
+            "External images need domain whitelisting",
+            "Not always ideal for tiny icons or static assets"
+          ]
+        },
+        {
+          "id": "reality-2",
+          "type": "text",
+          "content": "For simple cases, img is still valid and sometimes preferable."
+        },
+        {
+          "id": "reality-3",
+          "type": "text",
+          "content": "The mistake is blind replacement without understanding tradeoffs."
+        }
+      ]
+    },
+    {
+      "id": "main-content-when-to-use",
+      "title": "When to Use What",
+      "blocks": [
+        {
+          "id": "when-html",
+          "type": "text",
+          "content": "Use HTML img when:"
+        },
+        {
+          "id": "when-html-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Images are static and small",
+            "You need minimal overhead",
+            "You control every optimization manually"
+          ]
+        },
+        {
+          "id": "when-nextjs",
+          "type": "text",
+          "content": "Use Next.js Image when:"
+        },
+        {
+          "id": "when-nextjs-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Performance matters",
+            "SEO matters",
+            "Layout stability matters",
+            "You want defaults that prevent mistakes"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "title": "My Final Takeaway",
+      "blocks": [
+        {
+          "id": "takeaway-1",
+          "type": "text",
+          "content": "Using img taught me how easy it is to get images wrong."
+        },
+        {
+          "id": "takeaway-2",
+          "type": "text",
+          "content": "Using Next.js Image taught me how much performance and stability I was leaving on the table."
+        },
+        {
+          "id": "takeaway-3",
+          "type": "text",
+          "content": "The biggest lesson:"
+        },
+        {
+          "id": "takeaway-quote",
+          "type": "quote",
+          "content": "Image optimization is not optional. It's architectural."
+        },
+        {
+          "id": "takeaway-4",
+          "type": "text",
+          "content": "Frameworks like Next.js don't just add features; they encode best practices into defaults."
+        },
+        {
+          "id": "takeaway-5",
+          "type": "text",
+          "content": "Understanding why those defaults exist is what separates average frontend work from professional-grade systems."
+        },
+        {
+          "id": "takeaway-6",
+          "type": "text",
+          "content": "If you care about user experience, SEO, and long-term maintainability, images deserve the same attention as APIs, databases, and caching strategies."
+        }
+      ]
+    }
+  ]
+}
+

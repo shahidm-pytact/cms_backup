@@ -1,0 +1,103 @@
+{
+  "metadata": {
+    "slug": "ai-in-everyday-life",
+    "title": "The Rise of AI in Everyday Life",
+    "description": "Explore how artificial intelligence has seamlessly integrated into our daily routines through smart assistants, personalized recommendations, smart home devices, and workplace automation. Discover the practical ways AI is enhancing convenience and efficiency in modern life.",
+    "subtitle": "How artificial intelligence has become an invisible force in our daily lives, from smart assistants to automated workflows and personalized experiences.",
+    "author":  "Mayur Tank.",
+    "authorImg": "/images/mayurProfile.webp",
+    "publishedDate": "2025-12-10T10:00:00.000Z",
+    "readingTime": "2 min read",
+    "blogImage": "/images/blog/ai-iot-ecosystem.webp",
+    "metaDescription": "Discover how AI has become part of everyday life through smart assistants, personalized recommendations, smart home devices, and workplace automation. Learn practical ways AI enhances convenience and efficiency.",
+    "keywords": ["AI everyday life", "artificial intelligence", "smart assistants", "AI technology", "smart home", "AI automation", "personalized AI", "AI applications", "everyday AI", "AI tools"]
+  },
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "blocks": [
+        {
+          "id": "intro-main",
+          "type": "text",
+          "content": "Artificial Intelligence (AI) isn't just a concept from science fiction or advanced laboratories anymore. It's become an integral part of our daily lives, shaping how we interact with technology at home, at work, and even on the go. From smart assistants to intelligent applications, AI is quietly transforming the way we live, work, and make decisions."
+        }
+      ]
+    },
+    {
+      "id": "main-content-1",
+      "title": "AI in Mobile and Web Applications",
+      "blocks": [
+        {
+          "id": "mobile-intro",
+          "type": "text",
+          "content": "One of the most visible areas where AI has made its mark is in mobile and web applications. Developers are increasingly integrating AI-powered features to improve user experience and streamline workflows."
+        },
+        {
+          "id": "mobile-examples-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Smart Assistants: Applications like Google Assistant, Siri, and Alexa help users with tasks such as setting reminders, sending messages, and searching the web using natural language commands.",
+            "Personalized Recommendations: Streaming platforms like Netflix and Spotify use AI to analyze user preferences and recommend movies, shows, and music that match individual tastes.",
+            "Enhanced Photography: AI-powered photo editing apps automatically enhance images, recognize faces, and even suggest filters that suit the scene."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-2",
+      "title": "AI at Home",
+      "blocks": [
+        {
+          "id": "home-intro",
+          "type": "text",
+          "content": "The concept of a \"smart home\" is no longer futuristic. AI technologies are embedded in devices that make our homes more efficient, secure, and convenient."
+        },
+        {
+          "id": "home-examples-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Smart Thermostats: Devices like Nest learn user preferences and optimize heating and cooling schedules, saving energy and reducing bills.",
+            "Home Security: AI-enabled cameras can detect unusual activities, alert homeowners, and even distinguish between pets, family members, and strangers.",
+            "Voice-Controlled Devices: Smart speakers and connected devices allow users to control lights, appliances, and entertainment systems using simple voice commands."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-3",
+      "title": "AI in the Workplace",
+      "blocks": [
+        {
+          "id": "workplace-intro",
+          "type": "text",
+          "content": "AI is also transforming the professional environment by automating tasks, improving decision-making, and enhancing productivity."
+        },
+        {
+          "id": "workplace-examples-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Automation of Repetitive Tasks: Tools powered by AI can handle mundane administrative tasks like data entry, appointment scheduling, and email sorting, freeing employees for more strategic work.",
+            "Data Analysis: AI algorithms analyze vast datasets to identify patterns, trends, and anomalies, enabling faster and more informed business decisions.",
+            "Customer Support: AI chatbots provide 24/7 assistance, answer common queries, and escalate complex issues to human agents, improving service efficiency."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "title": "Conclusion",
+      "blocks": [
+        {
+          "id": "conclusion-main",
+          "type": "text",
+          "content": "The rise of AI in everyday life is undeniable. By seamlessly integrating into apps, homes, and workplaces, AI is enhancing convenience, efficiency, and personalization. While the technology continues to evolve, one thing is clear: AI isn't just a tool anymore—it's become a fundamental part of our daily routines, shaping the future of how we interact with technology."
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,178 @@
+{
+  "metadata": {
+    "slug": "frontend-tech-stack-production-perspective",
+    "title": "Frontend Tech Stack: A Production‑First Perspective",
+    "description": "Why choosing a frontend tech stack is an engineering decision, not a trend-following exercise. Discover the production-ready stack that scales from prototype to enterprise.",
+    "subtitle": "A comprehensive guide to our battle-tested frontend architecture that prioritizes production reliability over trendy frameworks.",
+    "author": "Mayur Tank.",
+    "authorImg": "/images/mayurProfile.webp",
+    "publishedDate": "2025-12-31T10:00:00.000Z",
+    "readingTime": "7 min read",
+    "blogImage": "/images/blog/frontendTechstackBlog.webp",
+    "metaDescription": "Discover a production-first frontend tech stack that scales from prototype to enterprise. Learn about Next.js, TypeScript, Tailwind CSS, React Query, and Zod with real-world case studies and trade-offs.",
+    "keywords": ["frontend stack", "Next.js", "TypeScript", "Tailwind CSS", "React Query", "production frontend", "frontend architecture", "scalable frontend", "React development", "frontend engineering"]
+  },
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "blocks": [
+        {
+          "id": "intro-1",
+          "type": "text",
+          "content": "Every frontend project starts with an uncomfortable question:"
+        },
+        {
+          "id": "intro-quote",
+          "type": "quote",
+          "content": "What stack should we choose so we don't regret it six months later?",
+          "variant": "hero"
+        },
+        {
+          "id": "intro-2",
+          "type": "text",
+          "content": "As frontend developers, we don't just write UI — we design systems that must survive change: changing requirements, changing teams, changing APIs, changing APIs, changing scale."
+        },
+        {
+          "id": "intro-3",
+          "type": "text",
+          "content": "The mistake many teams make is optimizing for initial velocity instead of long-term stability."
+        },
+        {
+          "id": "intro-4",
+          "type": "text",
+          "content": "In this blog, I'll walk through the frontend stack we currently use in production, why we chose it, where it helped us, and where it pushed back."
+        },
+        {
+          "id": "intro-5",
+          "type": "text",
+          "content": "This stack is not magic. But it solves a large class of real frontend problems reliably, and that's why we use it."
+        }
+      ]
+    },
+    {
+      "id": "main-content-frontend-stack",
+      "title": "Our Frontend Tech Stack (Production Context)",
+      "badge": "The Stack",
+      "badgeVariant": "accent",
+      "blocks": [
+        {
+          "id": "stack-intro",
+          "type": "text",
+          "content": "This technology army is capable of handling complex user interactions and state management without impacting performance. We have a consistent decision in choosing these stacks unless the customer has strict selection criteria."
+        },
+        {
+          "id": "stack-cards",
+          "type": "cards",
+          "columns": 5,
+          "items": [
+            {
+              "title": "Next.js + TypeScript",
+              "description": "Framework foundation with type safety",
+              "iconName": "Code"
+            },
+            {
+              "title": "Tailwind CSS",
+              "description": "Utility-first styling system",
+              "iconName": "Palette"
+            },
+            {
+              "title": "React Query + Axios",
+              "description": "Server state management",
+              "iconName": "Database"
+            },
+            {
+              "title": "React + Zod",
+              "description": "Form validation & handling",
+              "iconName": "FileText"
+            },
+            {
+              "title": "React Hooks",
+              "description": "Architectural primitives",
+              "iconName": "Settings"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-case-studies",
+      "title": "Real-World Applications as Proof",
+      "badge": "Proven Evidence",
+      "badgeVariant": "accent",
+      "subtitle": "I want to share real systems that demonstrate this frontend stack under production pressure.",
+      "blocks": [
+        {
+          "id": "case-study-1",
+          "type": "case-study",
+          "number": 1,
+          "title": "Document Vault: Internal Document Management System",
+          "description": "Document Vault is a secure, role-based document management system that handles complex workflows and multi-role access control. This internal tool demonstrates how our frontend stack handles enterprise-grade requirements with a small team.",
+          "link": {
+            "url": "https://github.com/pytact/doc-vault-ui/tree/dev",
+            "text": "View Document Vault Project"
+          },
+          "benefits": "Faster development cycles, safer refactoring, predictable UX, and easier team onboarding.",
+          "metrics": [
+            {
+              "label": "Development Speed",
+              "value": "3x faster",
+              "description": "Feature development velocity increased with TypeScript and React Query",
+              "iconName": "Zap"
+            },
+            {
+              "label": "Form Complexity",
+              "value": "Heavy workflows",
+              "description": "Handles complex document processing forms with Zod validation",
+              "iconName": "FileText"
+            },
+            {
+              "label": "Security",
+              "value": "Role-based",
+              "description": "Multi-role access control with secure document actions",
+              "iconName": "Shield"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-why-stack-works",
+      "title": "Why This Stack Solves Most Frontend Problems",
+      "blocks": [
+        {
+          "id": "why-intro",
+          "type": "text",
+          "content": "This stack does not claim other stacks are bad. We've used others. They work. But this combination consistently solves: routing complexity, data freshness, form correctness, team scalability, refactoring safety."
+        },
+        {
+          "id": "why-decision-fatigue",
+          "type": "text",
+          "content": "It removes decision fatigue. Instead of repeatedly asking: 'Is this reliable?' 'Will this scale?' We standardize — and improve over time. That shared understanding is more valuable than any individual tool choice."
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "title": "Final Thoughts",
+      "blocks": [
+        {
+          "id": "conclusion-1",
+          "type": "text",
+          "content": "A frontend stack is not about tools. It's about how well your system absorbs change."
+        },
+        {
+          "id": "conclusion-2",
+          "type": "text",
+          "content": "This stack works for us because: it's opinionated but flexible, it's battle-tested, it forces good engineering habits. Not because it's trendy."
+        },
+        {
+          "id": "conclusion-3",
+          "type": "text",
+          "content": "If your stack helps you: ship confidently, refactor safely, onboard faster — then it's doing its job. Everything else is noise."
+        }
+      ]
+    }
+  ]
+}
+

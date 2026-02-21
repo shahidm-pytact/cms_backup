@@ -80,7 +80,7 @@ def validate_content_structure(sections: list[SectionSchema]) -> None:
         "image": ["src", "alt"],
         "cards": ["columns", "items"],
         "steps": ["steps"],
-        "step": ["stepNumber", "title"],
+        "step": ["title"],  # stepNumber is optional
         "comparison": ["options", "items"],
     }
     
@@ -405,17 +405,17 @@ async def process_base64_image_field(
                 # Validate size
                 if len(binary_data) > MAX_IMAGE_SIZE:
                     raise ValueError(f"Image size exceeds maximum allowed size of {MAX_IMAGE_SIZE / 1024 / 1024}MB")
-        
-        # Save image with UUID filename
-        image_url = await save_image(
-            binary_data=binary_data,
-            blog_slug=blog_slug,
-            image_id=None,  # Generate UUID automatically
-            image_type=image_type,
-            storage_base_path=storage_base_path or settings.storage_base_path
-        )
-        
-        return image_url
+                
+                # Save image with UUID filename
+                image_url = await save_image(
+                    binary_data=binary_data,
+                    blog_slug=blog_slug,
+                    image_id=None,  # Generate UUID automatically
+                    image_type=image_type,
+                    storage_base_path=storage_base_path or settings.storage_base_path
+                )
+                
+                return image_url
             else:
                 # Has 'data:' but no ';base64,' - treat as path
                 return image_value

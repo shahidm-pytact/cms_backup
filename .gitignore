@@ -68,12 +68,10 @@ htmlcov/
 .dmypy.json
 dmypy.json
 
-# Project
-static/
-\static
-/static
+# Blog Images - Ignore all folders inside blogs/ but keep the directory structure
+# This keeps static/, static/images/, and static/images/blogs/ in git
+# but ignores all subdirectories and their contents inside blogs/
+static/images/blogs/*/
 
-static/images/
-images/
-
-blogs/
+# Documentation
+doc/

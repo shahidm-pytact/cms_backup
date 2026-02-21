@@ -1,0 +1,205 @@
+{
+  "metadata": {
+    "slug": "backend-stack-production",
+    "title": "The Backend Stack That Powers Production-Grade Systems",
+    "subtitle": "A founder's perspective on choosing technology that scales from prototype to millions of users, backed by real-world case studies. Discover the proven tech stack: FastAPI, PostgreSQL, Redis, and Celery.",
+    "description": "A founder's perspective on choosing technology that scales from prototype to millions of users, backed by real-world case studies. Discover the proven tech stack: FastAPI, PostgreSQL, Redis, and Celery.",
+    "author": "Kaushal Khokhar",
+    "authorImg": "https://media.licdn.com/dms/image/v2/D4D03AQFGxBtybrn-RQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1728039772945?e=2147483647&v=beta&t=ndiipYzFWpMNnIv5wKyG8wXD_a9wXMt2HYKQK5X8FrM",
+    "publishedDate": "2025-12-20T10:00:00.000Z",
+    "readingTime": "6 min read",
+    "heroQuote": "One needs to dig into the ocean to find the real diamonds.",
+    "blogImage": "/images/blog/backend_insights_blog.webp",
+    "metaDescription": "Discover the production-ready backend stack that scales from prototype to millions of users. Learn about FastAPI, PostgreSQL, Redis, and Celery with real-world case studies showing how this tech stack handles high-volume systems.",
+    "keywords": [
+      "backend stack",
+      "FastAPI",
+      "PostgreSQL",
+      "Redis",
+      "Celery",
+      "production backend",
+      "scalable backend",
+      "backend architecture",
+      "Python backend",
+      "production systems"
+    ]
+  },
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "blocks": [
+        {
+          "id": "intro-1",
+          "type": "text",
+          "content": "We build powerful features at PYTACT Solutions with an AI driven development process. You can review our case study where I explained the challenges, resolutions and result metrics to highlight the difference in outcome. This was one of the amazing achievements as a software development expert.",
+          "links": [
+            {
+              "text": "case study",
+              "url": "https://pytact.com/caseStudy/case-study-01",
+              "external": true
+            }
+          ]
+        },
+        {
+          "id": "intro-2",
+          "type": "text",
+          "content": "The most crucial component of software application is backend architecture design and tech stack. The whole foundation relies on what technical stacks we opt for and how we wired them so that system becomes scalable from the beginning itself."
+        },
+        {
+          "id": "intro-highlight",
+          "type": "highlight",
+          "content": "This is not a joke. With the advancement of AI, lots of beginners started developing applications but the real question is — \"how many of them have potential to ship it to production.\"",
+          "variant": "primary"
+        }
+      ]
+    },
+    {
+      "id": "main-content-tech-stack",
+      "title": "Our Production-Ready Technology Army",
+      "badge": "The Stack",
+      "badgeVariant": "accent",
+      "blocks": [
+        {
+          "id": "stack-intro",
+          "type": "text",
+          "content": "This technology army is capable of handling tons of requests without impacting performance. We have a consistent decision in choosing these stacks unless the customer has strict selection criteria."
+        },
+        {
+          "id": "stack-cards",
+          "type": "cards",
+          "columns": 4,
+          "items": [
+            {
+              "title": "FastAPI",
+              "description": "REST API service",
+              "iconName": "Server"
+            },
+            {
+              "title": "PostgreSQL",
+              "description": "Primary Database",
+              "iconName": "Database"
+            },
+            {
+              "title": "Redis",
+              "description": "Cache & message broker",
+              "iconName": "Zap"
+            },
+            {
+              "title": "Celery",
+              "description": "Background execution",
+              "iconName": "Clock"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-content-case-studies",
+      "title": "Real-World Systems as Proof",
+      "badge": "Proven Evidence",
+      "badgeVariant": "accent",
+      "description": "I want to share the most stable yet large systems as evidence instead of throwing my own justification.",
+      "blocks": [
+        {
+          "id": "case-study-1",
+          "type": "case-study",
+          "number": 1,
+          "title": "Fraud Detection Case Study: Sweet Spot Data",
+          "description": "This is perhaps the best 'real-world' example. It explains how a system moved from a traditional synchronous setup to this exact async stack to handle millions of transactions.",
+          "link": {
+            "url": "https://www.sweetspot-data.com/blog/fastapi-async-jobs-redis-celery-fraud-detection",
+            "text": "Building Async Job Processing with FastAPI, Redis, and Celery"
+          },
+          "benefits": "Linear scaling, resource isolation, and instant user feedback.",
+          "metrics": [
+            {
+              "label": "Latency",
+              "value": "<100ms",
+              "description": "API acknowledgment response times dropped because heavy logic was moved to Celery",
+              "iconName": "Clock"
+            },
+            {
+              "label": "Throughput",
+              "value": "10x–100x",
+              "description": "System throughput increased while infrastructure costs remained stable",
+              "iconName": "TrendingUp"
+            },
+            {
+              "label": "Uptime",
+              "value": "99.9%+",
+              "description": "Improved from 95% by using Redis/Celery to handle component failures gracefully",
+              "iconName": "Shield"
+            }
+          ]
+        },
+        {
+          "id": "case-study-2",
+          "type": "case-study",
+          "number": 2,
+          "title": "tva-fetch: Amazon Seller Data Infrastructure",
+          "description": "This article introduces an open-source tool (tva-fetch) designed for Amazon sellers. It uses an exact stack to manage the massive amount of data coming from Amazon's SP-API.",
+          "link": {
+            "url": "https://www.tva.sg/building-production-ready-data-infrastructure-for-amazon-sellers-introducing-tva-fetch/",
+            "text": "Building Production-Ready Data Infrastructure for Amazon Sellers"
+          },
+          "benefits": "Handling sophisticated rate limiting and high-volume I/O operations.",
+          "metrics": [
+            {
+              "label": "Data Volume",
+              "value": "81 Tables",
+              "description": "Manages 81 database tables with over 200 indexes in PostgreSQL",
+              "iconName": "Database"
+            },
+            {
+              "label": "Scalability",
+              "value": "Millions",
+              "description": "Uses TimescaleDB to handle tables growing into millions of rows without degradation",
+              "iconName": "Layers"
+            },
+            {
+              "label": "Concurrency",
+              "value": "Efficient",
+              "description": "Manages simultaneous tasks using Celery without exhausting the API thread pool",
+              "iconName": "Users"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "philosophy",
+      "title": "Why This Stack Covers 90% of Requirements",
+      "badge": "Engineering Philosophy",
+      "badgeVariant": "primary",
+      "blocks": [
+        {
+          "id": "philosophy-intro",
+          "type": "text",
+          "content": "The consistent stack doesn't mean we are not conscious about the other options. In fact we have proven records to build software using them as well:"
+        },
+        {
+          "id": "other-tech-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Django and Flask as backend services",
+            "MongoDB as NoSQL database",
+            "Vector Databases such as Qdrant"
+          ]
+        },
+        {
+          "id": "philosophy-note",
+          "type": "text",
+          "content": "But the stack which I highlighted here is capable enough to manage 90% of requirements."
+        },
+        {
+          "id": "philosophy-panel",
+          "type": "highlight",
+          "content": "The reason we believe in these packages is most of the time over-engineering kills the real product features and we end up wasting so much time and efforts in deciding only development stacks. On the contrary, which is never needed until the product proves the capability of solving the end user problem. Even though architecture should be solid enough to be extendible gracefully without doing re-engineering. That is why the provided stacks keep the perfect balance between ready to use and extensibility.",
+          "variant": "default"
+        }
+      ]
+    }
+  ]
+}

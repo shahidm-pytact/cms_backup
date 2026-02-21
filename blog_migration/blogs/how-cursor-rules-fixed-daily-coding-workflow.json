@@ -1,0 +1,344 @@
+{
+  "metadata": {
+    "slug": "how-cursor-rules-fixed-daily-coding-workflow",
+    "title": "How Cursor Rules Fixed the Biggest Problems in My Daily Coding Workflow",
+    "description": "Learn how defining clear Cursor rules transformed AI-generated code into clean, predictable, and production-ready engineering workflows.",
+    "subtitle": "Why defining clear AI boundaries and engineering rules transformed Cursor from a code generator into a reliable engineering partner.",
+    "author": "Shahid Malik",
+    "authorImg": "/images/shahidProfile.webp",
+    "publishedDate": "2026-01-01T10:00:00.000Z",
+    "readingTime": "8 min read",
+    "blogImage": "/images/blog/cursorruleBlog.webp",
+    "metaDescription": "Learn how defining clear Cursor rules transformed AI-generated code into clean, predictable, and production-ready engineering workflows.",
+    "keywords": ["cursor ai", "cursor rules", "ai coding workflow", "software architecture", "clean code", "engineering standards", "ai developer tools"]
+  },
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "blocks": [
+        {
+          "id": "intro-1",
+          "type": "text",
+          "content": "For a long time, I thought Cursor was \"good enough.\" It helped me write code faster, fix bugs, and scaffold features quickly. But something always felt off. The code worked, yet every time I reviewed it, I felt uncomfortable merging it into a serious project."
+        },
+        {
+          "id": "intro-2",
+          "type": "text",
+          "content": "Over time, the problems became obvious. Different modules followed different patterns. Business logic leaked into routers. Dependencies were inconsistent. Files appeared randomly, with no clear structure. The code didn't look clean, didn't feel intentional, and most importantly, didn't feel like my code."
+        },
+        {
+          "id": "intro-3",
+          "type": "text",
+          "content": "Cursor wasn't wrong—it was simply coding based on its own assumptions, not my engineering standards."
+        }
+      ]
+    },
+    {
+      "id": "main-content-missing-context",
+      "title": "The Real Issue Wasn't Cursor — It Was Missing Context",
+      "blocks": [
+        {
+          "id": "context-intro",
+          "type": "text",
+          "content": "Before using Cursor Rules, I expected Cursor to understand my project automatically. That assumption was flawed. Cursor had no idea about:"
+        },
+        {
+          "id": "context-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "My engineering standards",
+            "Architectural boundaries",
+            "Strictness levels",
+            "What it must never do",
+            "When it should stop and ask questions"
+          ]
+        },
+        {
+          "id": "context-solution",
+          "type": "text",
+          "content": "Without context, Cursor optimized for task completion, not long-term code quality. The solution wasn't better prompts. It was clear rules."
+        }
+      ]
+    },
+    {
+      "id": "main-content-what-changed",
+      "title": "What Changed After Defining Cursor Rules",
+      "blocks": [
+        {
+          "id": "changed-intro",
+          "type": "text",
+          "content": "Once I introduced well-defined rules, the difference was immediate."
+        },
+        {
+          "id": "cursor-stopped",
+          "type": "text",
+          "content": "Cursor stopped:"
+        },
+        {
+          "id": "stopped-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Creating random files",
+            "Mixing responsibilities",
+            "Importing infrastructure code into domain logic",
+            "Making silent assumptions"
+          ]
+        },
+        {
+          "id": "cursor-started",
+          "type": "text",
+          "content": "Cursor started:"
+        },
+        {
+          "id": "started-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Planning before coding",
+            "Asking clarifying questions",
+            "Following consistent module structures",
+            "Respecting architectural boundaries"
+          ]
+        },
+        {
+          "id": "changed-result",
+          "type": "text",
+          "content": "For the first time, Cursor felt like a senior engineer who understood the project."
+        }
+      ]
+    },
+    {
+      "id": "main-content-organize-rules",
+      "title": "How I Organize Cursor Rules",
+      "blocks": [
+        {
+          "id": "organize-intro",
+          "type": "text",
+          "content": "Initially, I placed all rules in a single file. That failed quickly. The rules became messy and contradictory, leading to inconsistent behavior."
+        },
+        {
+          "id": "organize-breakthrough",
+          "type": "text",
+          "content": "The breakthrough came when I structured rules like engineering documentation:"
+        },
+        {
+          "id": "organize-code",
+          "type": "code",
+          "language": "text",
+          "content": ".cursor/\n  rules/\n    00-core.md\n    01-architecture.md\n    02-backend.md\n    03-database.md\n    04-api.md\n    05-testing.md"
+        },
+        {
+          "id": "organize-result",
+          "type": "text",
+          "content": "This hierarchy implied priority, modularized context, and made the rules intuitive—both for humans and for Cursor."
+        }
+      ]
+    },
+    {
+      "id": "main-content-rule-hierarchy",
+      "title": "Why Rule Hierarchy Matters",
+      "blocks": [
+        {
+          "id": "hierarchy-behavior",
+          "type": "text",
+          "content": "Cursor doesn't behave like a compiler. It behaves like an engineer reading documentation."
+        },
+        {
+          "id": "hierarchy-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Core rules define non-negotiables",
+            "Architecture rules prevent boundary violations",
+            "Technology-specific rules eliminate confusion"
+          ]
+        },
+        {
+          "id": "hierarchy-result",
+          "type": "text",
+          "content": "This structure alone dramatically improved predictability and trust."
+        }
+      ]
+    },
+    {
+      "id": "main-content-writing-rules",
+      "title": "Writing Rules Cursor Actually Follows",
+      "blocks": [
+        {
+          "id": "writing-vague",
+          "type": "text",
+          "content": "Vague rules don't work. Statements like \"follow clean architecture\" are meaningless to an AI."
+        },
+        {
+          "id": "writing-effective",
+          "type": "text",
+          "content": "Effective rules are enforceable and explicit, for example:"
+        },
+        {
+          "id": "writing-quote",
+          "type": "quote",
+          "content": "Dependencies must always point inward. Infrastructure code must never be imported into domain modules. If unavoidable, stop and explain why."
+        },
+        {
+          "id": "writing-result",
+          "type": "text",
+          "content": "Clear rules create decision boundaries, not suggestions."
+        }
+      ]
+    },
+    {
+      "id": "main-content-mental-model",
+      "title": "A Simple Mental Model for Rule Writing",
+      "blocks": [
+        {
+          "id": "mental-model-intro",
+          "type": "text",
+          "content": "Every effective rule answers at least one question:"
+        },
+        {
+          "id": "mental-model-questions",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "What must never happen?",
+            "What should Cursor do when unsure?",
+            "What can Cursor safely assume?"
+          ]
+        },
+        {
+          "id": "mental-model-removal",
+          "type": "text",
+          "content": "Rules that answer none of these are removed."
+        }
+      ]
+    },
+    {
+      "id": "main-content-defining-role",
+      "title": "Defining Cursor's Role",
+      "blocks": [
+        {
+          "id": "role-intro",
+          "type": "text",
+          "content": "Before writing rules, I define Cursor's role. In my projects, Cursor acts as a senior backend engineer who:"
+        },
+        {
+          "id": "role-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Plans before coding",
+            "Explains trade-offs",
+            "Never makes silent assumptions"
+          ]
+        },
+        {
+          "id": "role-result",
+          "type": "text",
+          "content": "This single definition drastically changed Cursor's behavior."
+        }
+      ]
+    },
+    {
+      "id": "main-content-stop-conditions",
+      "title": "Knowing When Cursor Must Stop",
+      "blocks": [
+        {
+          "id": "stop-intro",
+          "type": "text",
+          "content": "Without stop conditions, Cursor can unintentionally cause damage."
+        },
+        {
+          "id": "stop-rule",
+          "type": "text",
+          "content": "One critical rule:"
+        },
+        {
+          "id": "stop-quote",
+          "type": "quote",
+          "content": "If schema changes are required, do not implement directly. Propose a migration plan first."
+        },
+        {
+          "id": "stop-result",
+          "type": "text",
+          "content": "This rule alone prevented multiple production risks."
+        }
+      ]
+    },
+    {
+      "id": "main-content-what-never-put",
+      "title": "What I Never Put in Cursor Rules",
+      "blocks": [
+        {
+          "id": "never-intro",
+          "type": "text",
+          "content": "Some things don't belong in rules:"
+        },
+        {
+          "id": "never-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Style preferences",
+            "Large code examples",
+            "Temporary decisions",
+            "Conflicting instructions"
+          ]
+        },
+        {
+          "id": "never-complement",
+          "type": "text",
+          "content": "Cursor complements tooling; it doesn't replace linters, type checkers, or migrations."
+        }
+      ]
+    },
+    {
+      "id": "main-content-validate-rules",
+      "title": "How I Validate My Rules",
+      "blocks": [
+        {
+          "id": "validate-intro",
+          "type": "text",
+          "content": "I use two checks:"
+        },
+        {
+          "id": "validate-list",
+          "type": "list",
+          "variant": "number",
+          "items": [
+            "Can another engineer make the same decisions using these rules?",
+            "Can Cursor summarize the non-negotiables correctly?"
+          ]
+        },
+        {
+          "id": "validate-result",
+          "type": "text",
+          "content": "If not, the rules—not Cursor—are unclear."
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "title": "Conclusion",
+      "blocks": [
+        {
+          "id": "conclusion-1",
+          "type": "text",
+          "content": "Cursor Rules aren't about controlling AI. They're about setting clear boundaries."
+        },
+        {
+          "id": "conclusion-2",
+          "type": "text",
+          "content": "When I stopped treating Cursor as a magic generator and started onboarding it like an engineer, my workflow became predictable, clean, and reliable."
+        },
+        {
+          "id": "conclusion-3",
+          "type": "text",
+          "content": "I wouldn't go back."
+        }
+      ]
+    }
+  ]
+}

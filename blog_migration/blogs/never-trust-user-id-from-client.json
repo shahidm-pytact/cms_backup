@@ -1,0 +1,412 @@
+{
+  "metadata": {
+    "slug": "never-trust-user-id-from-client",
+    "title": "Why Your API Should Never Trust user_id from the Client",
+    "subtitle": "How secure systems use authentication context instead of request data to prevent broken access control and real-world data breaches.",
+    "description": "Why passing user_id from the client breaks API security. Learn how token-based identity prevents IDOR, broken access control, and real-world data breaches.",
+    "author": "Shahid Malik",
+    "authorImg": "/images/shahidProfile.webp",
+    "publishedDate": "2026-01-20T10:00:00.000Z",
+    "blogImage": "/images/blog/never-trust-uid-blog.webp",
+    "readingTime": "7 min read",
+    "heroQuote": "In secure systems, identity is proven, not claimed.",
+    "metaDescription": "Why passing user_id from the client breaks API security. Learn how token-based identity prevents IDOR, broken access control, and real-world data breaches.",
+    "keywords": ["api security", "broken access control", "idor vulnerability", "jwt authentication", "oauth2 best practices", "backend authorization", "zero trust security", "secure api design"]
+  },
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "blocks": [
+        {
+          "id": "intro-1",
+          "type": "text",
+          "content": "One of the most common mistakes in backend systems is also one of the most dangerous."
+        },
+        {
+          "id": "intro-2",
+          "type": "text",
+          "content": "Many APIs accept a user_id directly from the client request. It looks harmless. The user is already logged in, after all. So what could go wrong?"
+        },
+        {
+          "id": "intro-3",
+          "type": "text",
+          "content": "In practice, this single design decision has caused some of the largest data leaks and authorization failures in modern software systems. The problem is not about coding skills. It is about understanding how trust boundaries work in distributed systems."
+        },
+        {
+          "id": "intro-4",
+          "type": "text",
+          "content": "This article explains why passing user_id from the client is unsafe, how secure systems really identify users, and what industry standards and real incidents teach us about this pattern."
+        }
+      ]
+    },
+    {
+      "id": "main-content-two-api-designs",
+      "title": "The Two Common API Designs",
+      "blocks": [
+        {
+          "id": "designs-1",
+          "type": "text",
+          "content": "When building authenticated APIs, developers usually follow one of these two approaches:"
+        },
+        {
+          "id": "approach-1-title",
+          "type": "text",
+          "content": "Approach 1 – Client-Supplied Identity"
+        },
+        {
+          "id": "approach-1-desc",
+          "type": "text",
+          "content": "The client sends:"
+        },
+        {
+          "id": "approach-1-code",
+          "type": "code",
+          "language": "json",
+          "content": "{\n  \"user_id\": 42,\n  \"action\": \"create_order\"\n}"
+        },
+        {
+          "id": "approach-1-trust",
+          "type": "text",
+          "content": "The backend trusts this value."
+        },
+        {
+          "id": "approach-2-title",
+          "type": "text",
+          "content": "Approach 2 – Token-Derived Identity"
+        },
+        {
+          "id": "approach-2-desc",
+          "type": "text",
+          "content": "The client sends only the access token:"
+        },
+        {
+          "id": "approach-2-code",
+          "type": "code",
+          "language": "text",
+          "content": "Authorization: Bearer <JWT>"
+        },
+        {
+          "id": "approach-2-extract",
+          "type": "text",
+          "content": "The backend verifies the token and internally extracts the user identity."
+        },
+        {
+          "id": "approach-2-control",
+          "type": "text",
+          "content": "The client never controls the user_id."
+        },
+        {
+          "id": "designs-2",
+          "type": "text",
+          "content": "At first glance, both seem to work. From a security perspective, they are very different."
+        }
+      ]
+    },
+    {
+      "id": "main-content-why-trusting-dangerous",
+      "title": "Why Trusting user_id is Dangerous",
+      "blocks": [
+        {
+          "id": "dangerous-1",
+          "type": "text",
+          "content": "The main risk is a vulnerability called Insecure Direct Object Reference (IDOR)."
+        },
+        {
+          "id": "dangerous-2",
+          "type": "text",
+          "content": "It means the system allows a user to access or modify objects that do not belong to them by changing identifiers in the request."
+        },
+        {
+          "id": "dangerous-example-title",
+          "type": "text",
+          "content": "Example:"
+        },
+        {
+          "id": "dangerous-example-desc",
+          "type": "text",
+          "content": "A user logged in as ID 7 can simply send:"
+        },
+        {
+          "id": "dangerous-example-code",
+          "type": "code",
+          "language": "json",
+          "content": "{\n  \"user_id\": 1,\n  \"amount\": 10000\n}"
+        },
+        {
+          "id": "dangerous-example-result",
+          "type": "text",
+          "content": "If the backend trusts this value, the user is now acting as someone else."
+        },
+        {
+          "id": "dangerous-3",
+          "type": "text",
+          "content": "This is not a theoretical problem."
+        },
+        {
+          "id": "dangerous-4",
+          "type": "text",
+          "content": "IDOR is listed under OWASP API Security – Broken Object Level Authorization, one of the top causes of API breaches globally."
+        },
+        {
+          "id": "dangerous-5",
+          "type": "text",
+          "content": "In multiple public security reports, IDOR has been responsible for:"
+        },
+        {
+          "id": "dangerous-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Unauthorized data exposure",
+            "Account takeovers",
+            "Financial fraud",
+            "Privacy violations"
+          ]
+        },
+        {
+          "id": "dangerous-6",
+          "type": "text",
+          "content": "The root cause is always the same: identity is taken from client input instead of server-side authentication context."
+        }
+      ]
+    },
+    {
+      "id": "main-content-tokens-exist",
+      "title": "Tokens Exist for a Reason",
+      "blocks": [
+        {
+          "id": "tokens-1",
+          "type": "text",
+          "content": "Modern authentication systems use tokens (JWT, OAuth2, session tokens) to solve exactly this problem."
+        },
+        {
+          "id": "tokens-2",
+          "type": "text",
+          "content": "A token is:"
+        },
+        {
+          "id": "tokens-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Cryptographically signed",
+            "Tamper-proof",
+            "Issued only after successful authentication",
+            "Verified by the backend on every request"
+          ]
+        },
+        {
+          "id": "tokens-3",
+          "type": "text",
+          "content": "Inside the token, the server already knows who the user is:"
+        },
+        {
+          "id": "tokens-code",
+          "type": "code",
+          "language": "json",
+          "content": "{\n  \"sub\": \"42\",\n  \"email\": \"user@example.com\",\n  \"role\": \"user\"\n}"
+        },
+        {
+          "id": "tokens-4",
+          "type": "text",
+          "content": "This value cannot be modified by the client without invalidating the signature."
+        },
+        {
+          "id": "tokens-5",
+          "type": "text",
+          "content": "This is why standards like OAuth 2.0, OpenID Connect, and RFC 7519 (JWT) define identity as part of the authentication context, not request data."
+        }
+      ]
+    },
+    {
+      "id": "main-content-zero-trust",
+      "title": "Zero Trust in Practice",
+      "blocks": [
+        {
+          "id": "zero-trust-1",
+          "type": "text",
+          "content": "A core principle of secure systems is simple:"
+        },
+        {
+          "id": "zero-trust-highlight",
+          "type": "highlight",
+          "content": "Never trust the client for identity.",
+          "variant": "primary"
+        },
+        {
+          "id": "zero-trust-2",
+          "type": "text",
+          "content": "The network is untrusted."
+        },
+        {
+          "id": "zero-trust-3",
+          "type": "text",
+          "content": "The browser is untrusted."
+        },
+        {
+          "id": "zero-trust-4",
+          "type": "text",
+          "content": "The mobile app is untrusted."
+        },
+        {
+          "id": "zero-trust-5",
+          "type": "text",
+          "content": "Only the verified token is trusted."
+        },
+        {
+          "id": "zero-trust-6",
+          "type": "text",
+          "content": "When the backend derives user_id from the token, every endpoint automatically follows the same security rule. This drastically reduces the chance of missing authorization checks and introducing silent vulnerabilities."
+        }
+      ]
+    },
+    {
+      "id": "main-content-secure-api-design",
+      "title": "How Secure APIs Are Designed",
+      "blocks": [
+        {
+          "id": "secure-1",
+          "type": "text",
+          "content": "A safe request usually looks like this:"
+        },
+        {
+          "id": "secure-code-1",
+          "type": "code",
+          "language": "http",
+          "content": "POST /api/orders\nAuthorization: Bearer <token>\n\nPayload:\n{\n  \"product_id\": 15,\n  \"quantity\": 2\n}"
+        },
+        {
+          "id": "secure-2",
+          "type": "text",
+          "content": "Backend logic:"
+        },
+        {
+          "id": "secure-code-2",
+          "type": "code",
+          "language": "python",
+          "content": "user = request.user\ncreate_order(user_id=user.id, ...)"
+        },
+        {
+          "id": "secure-3",
+          "type": "text",
+          "content": "There is no user_id in the payload."
+        },
+        {
+          "id": "secure-4",
+          "type": "text",
+          "content": "The server decides who the user is."
+        },
+        {
+          "id": "secure-5",
+          "type": "text",
+          "content": "This is how large platforms like Google, Stripe, AWS, GitHub, and Auth0 design their APIs."
+        }
+      ]
+    },
+    {
+      "id": "main-content-when-acceptable",
+      "title": "When is Passing user_id Acceptable?",
+      "blocks": [
+        {
+          "id": "acceptable-1",
+          "type": "text",
+          "content": "There are limited and controlled cases:"
+        },
+        {
+          "id": "acceptable-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Internal microservices",
+            "Admin systems",
+            "System-to-system integrations"
+          ]
+        },
+        {
+          "id": "acceptable-2",
+          "type": "text",
+          "content": "Even here, the token must contain elevated privileges, and the backend must still validate authorization explicitly."
+        },
+        {
+          "id": "acceptable-3",
+          "type": "text",
+          "content": "For public user-facing APIs, trusting user_id is almost always a security flaw."
+        }
+      ]
+    },
+    {
+      "id": "main-content-industry-evidence",
+      "title": "Evidence from the Industry",
+      "blocks": [
+        {
+          "id": "evidence-1",
+          "type": "text",
+          "content": "Security incident analyses consistently show:"
+        },
+        {
+          "id": "evidence-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Broken Access Control is the #1 API vulnerability category.",
+            "IDOR flaws are among the most frequently exploited issues.",
+            "Most of these arise from trusting identifiers coming from the client."
+          ]
+        },
+        {
+          "id": "evidence-2",
+          "type": "text",
+          "content": "These findings are published repeatedly in:"
+        },
+        {
+          "id": "evidence-sources-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "OWASP API Security Top 10",
+            "NIST Zero Trust Architecture guidelines",
+            "OAuth and OpenID security recommendations"
+          ]
+        },
+        {
+          "id": "evidence-3",
+          "type": "text",
+          "content": "The consensus is clear: identity must come from authentication context, not request parameters."
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "title": "Conclusion",
+      "blocks": [
+        {
+          "id": "conclusion-1",
+          "type": "text",
+          "content": "Accepting user_id from the client feels convenient, but it creates a fragile and dangerous trust model."
+        },
+        {
+          "id": "conclusion-2",
+          "type": "text",
+          "content": "Deriving identity from the verified token is not only more secure, it is simpler to reason about, easier to maintain, and aligned with global standards."
+        },
+        {
+          "id": "conclusion-3",
+          "type": "text",
+          "content": "If your API handles anything important — user data, money, permissions, or privacy — this is not an optional design choice. It is foundational security engineering."
+        },
+        {
+          "id": "conclusion-4",
+          "type": "text",
+          "content": "Good APIs do not ask the client who they are."
+        },
+        {
+          "id": "conclusion-5",
+          "type": "text",
+          "content": "They already know."
+        }
+      ]
+    }
+  ]
+}
+

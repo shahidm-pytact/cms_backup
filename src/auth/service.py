@@ -90,7 +90,7 @@ class AuthService:
             # Flush changes (no commit - service controls commit)
             self.session.add(user)
             await self.session.flush()
-                await self.session.refresh(user)
+            await self.session.refresh(user)
 
         elif user.google_id != google_id:
             # Someone trying to login with wrong Google account

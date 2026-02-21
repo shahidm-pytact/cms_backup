@@ -1,0 +1,342 @@
+{
+  "metadata": {
+    "slug": "i-stopped-using-cursor",
+    "title": "I Stopped Using Cursor and Started Working With It",
+    "subtitle": "How treating Cursor as an engineering partner instead of a code generator transformed my workflow—from planning mode to production-ready systems.",
+    "description": "How treating Cursor as an engineering partner instead of a code generator transformed my workflow—from planning mode to production-ready systems.",
+    "author":  "Shahid Malik",
+    "authorImg": "/images/shahidProfile.webp",
+    "publishedDate": "2025-12-22T10:00:00.000Z",
+    "readingTime": "8 min read",
+    "blogImage": "/images/blog/stop-using-like-a-noob.webp",
+    "metaDescription": "Learn how to transform Cursor from a code generator into an engineering partner. Discover planning mode, cursor rules, smart diff reviews, and real-world strategies that helped build a production-ready backend in just 3 days.",
+    "keywords": ["Cursor AI", "AI coding assistant", "software development", "engineering workflow", "AI collaboration", "code generation", "development productivity", "AI tools", "programming", "software engineering"]
+  },
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "blocks": [
+        {
+          "id": "intro-main",
+          "type": "text",
+          "content": "I used Cursor casually for months. It was faster than manually typing everything, sure. But I wasn't getting the results I expected. Code would drift. Bugs would appear. Context would get lost halfway through a feature."
+        },
+        {
+          "id": "intro-shift",
+          "type": "text",
+          "content": "Then something changed. Not in the tool—in how I approached it."
+        },
+        {
+          "id": "intro-transformation",
+          "type": "text",
+          "content": "I stopped treating Cursor as a code generator. I started treating it as an engineering partner—one that needed structure, context, and clear expectations. The difference was immediate."
+        }
+      ]
+    },
+    {
+      "id": "planning-mode",
+      "title": "Planning Mode — Code Comes Second",
+      "blocks": [
+        {
+          "id": "planning-shift",
+          "type": "text",
+          "content": "The biggest shift was realizing that jumping straight to code was the problem. Cursor is powerful, but power without direction creates chaos."
+        },
+        {
+          "id": "planning-old-workflow",
+          "type": "text",
+          "content": "Here's what my old workflow looked like:"
+        },
+        {
+          "id": "chaos-loop",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Vague Requirement",
+            "Generate Code",
+            "Debug",
+            "Fix",
+            "More Bugs"
+          ]
+        },
+        {
+          "id": "planning-new-workflow",
+          "type": "text",
+          "content": "And here's what it looks like now:"
+        },
+        {
+          "id": "planning-first",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Define Intent",
+            "Agree on Plan",
+            "Write Code",
+            "Review & Ship"
+          ]
+        },
+        {
+          "id": "planning-quote",
+          "type": "quote",
+          "content": "Let's agree on the plan first, then write code."
+        },
+        {
+          "id": "planning-result",
+          "type": "text",
+          "content": "This single mindset shift—asking Cursor to propose a plan before writing anything—changed everything. The AI became collaborative instead of chaotic. It started anticipating edge cases. It asked clarifying questions instead of making assumptions."
+        }
+      ]
+    },
+    {
+      "id": "cursor-rules",
+      "title": "Cursor Rules — Where Real Control Lives",
+      "blocks": [
+        {
+          "id": "rules-intro",
+          "type": "text",
+          "content": "Most people don't realize Cursor has a rules system. It's not flashy. It's not even well-documented. But it's where the magic happens."
+        },
+        {
+          "id": "rules-explanation",
+          "type": "text",
+          "content": "Rules let you define constraints that persist across sessions. They're the difference between a tool that forgets context and one that respects your architecture."
+        },
+        {
+          "id": "rules-code-1",
+          "type": "code",
+          "language": "text",
+          "content": "/src/modules/{feature}"
+        },
+        {
+          "id": "rules-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "All APIs must implement RBAC checks",
+            "Use repository pattern for data access",
+            "Follow existing naming conventions"
+          ]
+        },
+        {
+          "id": "rules-code-2",
+          "type": "code",
+          "language": "text",
+          "content": "auth.config.ts, database.ts"
+        },
+        {
+          "id": "rules-result",
+          "type": "highlight",
+          "content": "The Result? 90% fewer AI mistakes. Cursor stopped suggesting code that violated our patterns. It stopped touching files it shouldn't. It started understanding the system, not just the prompt.",
+          "variant": "primary"
+        }
+      ]
+    },
+    {
+      "id": "smart-diff-view",
+      "title": "Smart Diff View — Intent Review, Not Line Review",
+      "blocks": [
+        {
+          "id": "diff-intro",
+          "type": "text",
+          "content": "Before, I'd accept AI changes blindly or reject them entirely. Both approaches were wrong."
+        },
+        {
+          "id": "diff-approach",
+          "type": "text",
+          "content": "Now I use Cursor's diff view as an intent review. The question isn't \"Is this code correct?\" It's \"Does this change match what I asked for?\""
+        },
+        {
+          "id": "diff-before",
+          "type": "highlight",
+          "content": "Before: Review every line. Miss the forest for the trees. Accept changes that technically work but violate intent.",
+          "variant": "default"
+        },
+        {
+          "id": "diff-after",
+          "type": "highlight",
+          "content": "After: Review the intent. Check multi-file consistency. Reject changes that work but don't fit the architecture.",
+          "variant": "primary"
+        },
+        {
+          "id": "diff-refactors",
+          "type": "text",
+          "content": "This is especially critical for refactors. Cursor can touch 20 files in a single operation. Understanding the intent across all of them is more important than validating each line."
+        }
+      ]
+    },
+    {
+      "id": "large-feature-builds",
+      "title": "Large Feature Builds Without Micromanagement",
+      "blocks": [
+        {
+          "id": "features-intro",
+          "type": "text",
+          "content": "The real test of any AI workflow is complex features. Not one-off functions—entire systems with multiple components, edge cases, and integration points."
+        },
+        {
+          "id": "features-approach",
+          "type": "text",
+          "content": "I used to break everything into tiny tasks and feed them to Cursor one by one. It was exhausting. Now I give Cursor the full scope and set guardrails."
+        },
+        {
+          "id": "features-instructions",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Ask questions first before implementing",
+            "Pause after each TODO block for review",
+            "Do not implement until I approve the plan"
+          ]
+        },
+        {
+          "id": "features-result",
+          "type": "text",
+          "content": "These simple instructions transform Cursor from a code generator into a careful implementer. It breaks down the work itself. It flags uncertainties. It waits for approval at critical points."
+        },
+        {
+          "id": "features-success",
+          "type": "highlight",
+          "content": "The result: features that used to take days of back-and-forth now ship in hours—with fewer bugs.",
+          "variant": "accent"
+        }
+      ]
+    },
+    {
+      "id": "browser-context",
+      "title": "In-Built Browser + Auto Context Awareness",
+      "blocks": [
+        {
+          "id": "context-intro",
+          "type": "text",
+          "content": "One underrated feature: Cursor sees everything you're working on. The terminal output. The browser preview. The files you have open."
+        },
+        {
+          "id": "context-awareness",
+          "type": "highlight",
+          "content": "Unified Context Awareness: Browser, Terminal, Open Files, AI Understanding. Reduced context switching.",
+          "variant": "default"
+        },
+        {
+          "id": "context-benefit",
+          "type": "text",
+          "content": "This unified awareness means fewer context switches for you. When debugging, Cursor already knows the error. When building UI, it sees the rendered result. When integrating APIs, it reads the terminal logs."
+        },
+        {
+          "id": "context-workflow",
+          "type": "text",
+          "content": "I used to copy-paste error messages. Now I just ask \"Why isn't this working?\" and Cursor figures it out from context."
+        }
+      ]
+    },
+    {
+      "id": "model-switching",
+      "title": "Model Switching — Subtle but Powerful",
+      "blocks": [
+        {
+          "id": "model-intro",
+          "type": "text",
+          "content": "Cursor lets you switch between models mid-conversation. It sounds minor. It's not."
+        },
+        {
+          "id": "model-strengths",
+          "type": "text",
+          "content": "Different models have different strengths. Some are faster for simple completions. Others are better for complex reasoning. Some excel at specific languages or frameworks."
+        },
+        {
+          "id": "model-workflow",
+          "type": "text",
+          "content": "I've developed an intuition: start with a fast model for exploration, switch to a reasoning model for architecture decisions, and use a balanced model for implementation. The workflow becomes adaptive."
+        }
+      ]
+    },
+    {
+      "id": "real-world-result",
+      "title": "The Real-World Result",
+      "blocks": [
+        {
+          "id": "result-highlight",
+          "type": "highlight",
+          "content": "Production-Ready Backend in 3 Days: Using these patterns, I built a complete backend system from scratch. Not a prototype. Not a demo. A production-ready system with real security, real architecture, and real maintainability.",
+          "variant": "primary"
+        },
+        {
+          "id": "result-features",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Complete Auth System",
+            "Role-Based Access Control",
+            "Permission Management",
+            "RESTful API Layer",
+            "Clean Architecture",
+            "Full Test Coverage"
+          ]
+        },
+        {
+          "id": "result-timeline",
+          "type": "text",
+          "content": "Three days. That includes authentication, role-based access control, a full permission system, clean API design, and documentation. The kind of work that used to take weeks."
+        }
+      ]
+    },
+    {
+      "id": "public-project",
+      "title": "See It Yourself",
+      "blocks": [
+        {
+          "id": "project-intro",
+          "type": "text",
+          "content": "The entire project is public. Every commit shows the collaboration between human intent and AI execution. You can see the patterns in action."
+        },
+        {
+          "id": "project-highlight",
+          "type": "highlight",
+          "content": "pytact/doc-vault-be — Production-ready backend built with intentional AI collaboration",
+          "variant": "primary"
+        },
+        {
+          "id": "project-github",
+          "type": "cta",
+          "title": "Explore the Repository",
+          "description": "See how intentional AI collaboration creates production-ready systems",
+          "buttons": [
+            {
+              "text": "View on GitHub",
+              "url": "https://github.com/pytact/doc-vault-be",
+              "variant": "primary",
+              "external": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "title": "The Shift That Matters",
+      "blocks": [
+        {
+          "id": "conclusion-main",
+          "type": "text",
+          "content": "AI tools don't replace thinking. They amplify it."
+        },
+        {
+          "id": "conclusion-insight",
+          "type": "text",
+          "content": "The engineers getting the most from tools like Cursor aren't the ones who prompt faster or use more features. They're the ones who bring structure. Who plan before coding. Who define rules instead of hoping for consistency."
+        },
+        {
+          "id": "conclusion-quote",
+          "type": "quote",
+          "content": "Plan first. Define rules. Treat AI as a teammate, not a tool."
+        },
+        {
+          "id": "conclusion-final",
+          "type": "text",
+          "content": "That's the shift. It's not about the technology—it's about the approach. And once you make it, everything changes."
+        }
+      ]
+    }
+  ]
+}
+

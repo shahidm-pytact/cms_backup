@@ -1,0 +1,443 @@
+{
+  "metadata": {
+    "slug": "the-6-blocks-i-use-to-estimate-mvp-timelines",
+    "title": "The 6 Blocks I Use to Estimate MVP Timelines",
+    "subtitle": "If someone gives you an MVP quote in five minutes, they are guessing. Here's a systematic approach to accurate estimation that turns vague ideas into clear timelines.",
+    "description": "If someone gives you an MVP quote in five minutes, they are guessing. Here's a systematic approach to accurate estimation that turns vague ideas into clear timelines.",
+    "author": "Kaushal Khokhar",
+    "authorImg": "https://media.licdn.com/dms/image/v2/D4D03AQFGxBtybrn-RQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1728039772945?e=2147483647&v=beta&t=ndiipYzFWpMNnIv5wKyG8wXD_a9wXMt2HYKQK5X8FrM",
+    "publishedDate": "2026-01-15T10:00:00.000Z",
+    "readingTime": "8 min read",
+    "blogImage": "/images/blog/mvp-timeline-planning.webp",
+    "metaDescription": "Learn a systematic 30-minute framework for accurate MVP estimation. Discover the 6 blocks that turn vague ideas into clear timelines: problem definition, user roles, workflows, data entities, integrations, and non-functional basics.",
+    "keywords": ["MVP estimation", "project estimation", "software estimation", "MVP timeline", "project management", "agile estimation", "software development", "MVP planning", "estimation framework", "project scope"]
+  },
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "blocks": [
+        {
+          "id": "intro-1",
+          "type": "text",
+          "content": "If someone gives you an MVP quote in five minutes, they are guessing."
+        },
+        {
+          "id": "intro-2",
+          "type": "text",
+          "content": "Not always with bad intent. Sometimes they just want to sound fast and confident. But confidence without clarity is still a guess."
+        },
+        {
+          "id": "intro-3",
+          "type": "text",
+          "content": "My estimation goal is not to sound confident. My goal is to be accurate."
+        },
+        {
+          "id": "intro-4",
+          "type": "text",
+          "content": "And accurate estimation is not a talent. It is a habit. You reduce unknowns until the work becomes visible."
+        }
+      ]
+    },
+    {
+      "id": "main-content-what-mvp-estimation-is",
+      "title": "What MVP estimation actually is",
+      "blocks": [
+        {
+          "id": "estimation-1",
+          "type": "text",
+          "content": "Most people treat estimation like prediction. Like someone should be able to look at an idea and tell you the timeline."
+        },
+        {
+          "id": "estimation-2",
+          "type": "text",
+          "content": "That is not how real delivery works."
+        },
+        {
+          "id": "estimation-definition",
+          "type": "text",
+          "content": "MVP estimation is not predicting the future. It is turning a vague idea into clear slices of work so you can make decisions without burning time, money, or trust."
+        },
+        {
+          "id": "estimation-3",
+          "type": "text",
+          "content": "Bad estimates do not just hurt budgets. They create pressure. They force shortcuts. They break relationships. And the MVP that was supposed to validate a business ends up proving something else: the build was fragile."
+        },
+        {
+          "id": "estimation-4",
+          "type": "text",
+          "content": "That is why I do not estimate by feature lists. I estimate by clarity."
+        }
+      ]
+    },
+    {
+      "id": "main-content-30-minute-framework",
+      "title": "My 30-minute estimation framework",
+      "blocks": [
+        {
+          "id": "framework-1",
+          "type": "text",
+          "content": "I keep estimation short. Around 30 minutes."
+        },
+        {
+          "id": "framework-2",
+          "type": "text",
+          "content": "But it is not 30 minutes of typing numbers into a sheet. It is 30 minutes of asking the right questions in the right order. The goal is simple: remove ambiguity before we talk dates."
+        },
+        {
+          "id": "framework-3",
+          "type": "text",
+          "content": "I run through six blocks. Every time."
+        }
+      ]
+    },
+    {
+      "id": "main-content-block-1-problem-outcome",
+      "title": "1) Problem and outcome",
+      "blocks": [
+        {
+          "id": "block1-1",
+          "type": "text",
+          "content": "I do not start with \"what features do you want?\""
+        },
+        {
+          "id": "block1-2",
+          "type": "text",
+          "content": "I start with: what change do you want after the MVP?"
+        },
+        {
+          "id": "block1-3",
+          "type": "text",
+          "content": "What should be different once this is live?"
+        },
+        {
+          "id": "block1-4",
+          "type": "text",
+          "content": "Then I ask one more thing that makes people pause: what does success look like 30 days after launch?"
+        },
+        {
+          "id": "block1-5",
+          "type": "text",
+          "content": "Not a perfect world answer. A practical one."
+        },
+        {
+          "id": "block1-insight",
+          "type": "text",
+          "content": "Because the MVP is not the product. It is the smallest thing you can ship that creates a measurable outcome. If we do not define that, everything else becomes noise. And the estimate becomes a stack of guesses."
+        }
+      ]
+    },
+    {
+      "id": "main-content-block-2-users-roles",
+      "title": "2) Users and roles",
+      "blocks": [
+        {
+          "id": "block2-1",
+          "type": "text",
+          "content": "Next, I list who will use it."
+        },
+        {
+          "id": "block2-2",
+          "type": "text",
+          "content": "Admin, staff, customer, manager. Whatever your roles are, we write them down."
+        },
+        {
+          "id": "block2-3",
+          "type": "text",
+          "content": "Then we do the part that looks small but never is: permissions."
+        },
+        {
+          "id": "block2-4",
+          "type": "text",
+          "content": "Who can see what? Who can do what?"
+        },
+        {
+          "id": "block2-5",
+          "type": "text",
+          "content": "Roles and permissions are not later work. They shape screens, workflows, and data rules from day one. If you ignore this in estimation, you do not save time. You just hide complexity and pay for it later."
+        }
+      ]
+    },
+    {
+      "id": "main-content-block-3-core-workflows",
+      "title": "3) Core workflows (only the must-work ones)",
+      "blocks": [
+        {
+          "id": "block3-1",
+          "type": "text",
+          "content": "This is where I cut through excitement and \"we can add this also.\""
+        },
+        {
+          "id": "block3-2",
+          "type": "text",
+          "content": "I write only the must-work flows. Usually three to five."
+        },
+        {
+          "id": "block3-3",
+          "type": "text",
+          "content": "Not twenty. Not nice to have. Only what must work for this MVP to be real."
+        },
+        {
+          "id": "block3-4",
+          "type": "text",
+          "content": "They sound boring on paper, but they decide everything:"
+        },
+        {
+          "id": "block3-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "sign-up and login",
+            "create a record",
+            "view a list",
+            "update a status",
+            "report or export"
+          ]
+        },
+        {
+          "id": "block3-5",
+          "type": "text",
+          "content": "These flows become the backbone. If we cannot write them clearly, we are not ready to estimate yet. We still do not understand what we are building."
+        }
+      ]
+    },
+    {
+      "id": "main-content-block-4-data-entities",
+      "title": "4) Data entities (the nouns)",
+      "blocks": [
+        {
+          "id": "block4-1",
+          "type": "text",
+          "content": "Then I look for the nouns."
+        },
+        {
+          "id": "block4-2",
+          "type": "text",
+          "content": "User → Organization → Order → Ticket → Payment"
+        },
+        {
+          "id": "block4-3",
+          "type": "text",
+          "content": "We list them because those nouns become your database direction. And once data is involved, messy thinking becomes expensive."
+        },
+        {
+          "id": "block4-4",
+          "type": "text",
+          "content": "You can rewrite UI fast. You can refactor code. But fixing a confused data model later is slow, risky, and painful."
+        },
+        {
+          "id": "block4-5",
+          "type": "text",
+          "content": "So during estimation, I want clarity on the nouns early. Even if it is rough. Even if it evolves. We just need a clean starting point."
+        }
+      ]
+    },
+    {
+      "id": "main-content-block-5-integrations",
+      "title": "5) Integrations",
+      "blocks": [
+        {
+          "id": "block5-1",
+          "type": "text",
+          "content": "Any third-party tools involved?"
+        },
+        {
+          "id": "block5-2",
+          "type": "text",
+          "content": "WhatsApp, email, payment gateway, CRM, Google Sheets. Whatever it is, we note it."
+        },
+        {
+          "id": "block5-3",
+          "type": "text",
+          "content": "Each integration adds uncertainty. Not because it is impossible. Because it has external rules and failure cases you do not control."
+        },
+        {
+          "id": "block5-4",
+          "type": "text",
+          "content": "I do not treat integrations like a checkbox. I treat them like a multiplier. It changes timeline, testing, and support work."
+        }
+      ]
+    },
+    {
+      "id": "main-content-block-6-non-functional",
+      "title": "6) Non-functional basics (without over-engineering)",
+      "blocks": [
+        {
+          "id": "block6-1",
+          "type": "text",
+          "content": "This is where people hear \"architecture\" and worry about over-engineering."
+        },
+        {
+          "id": "block6-2",
+          "type": "text",
+          "content": "I am not talking about fancy systems. I am talking about basics that keep you from shipping something fragile:"
+        },
+        {
+          "id": "block6-3",
+          "type": "text",
+          "content": "Security basics. Performance basics. Logging. Backups."
+        },
+        {
+          "id": "block6-4",
+          "type": "text",
+          "content": "Not perfection. Just enough so the MVP can survive normal usage without becoming a fire drill."
+        },
+        {
+          "id": "block6-5",
+          "type": "text",
+          "content": "If your MVP is fragile, you do not learn from it. You spend the first month repairing it."
+        }
+      ]
+    },
+    {
+      "id": "main-content-timeline-cost",
+      "title": "Turning it into timeline and cost",
+      "blocks": [
+        {
+          "id": "timeline-1",
+          "type": "text",
+          "content": "Once the six blocks are clear, converting it into a timeline becomes straightforward."
+        },
+        {
+          "id": "timeline-2",
+          "type": "text",
+          "content": "I break the work into milestones:"
+        },
+        {
+          "id": "timeline-milestones",
+          "type": "cards",
+          "columns": 2,
+          "items": [
+            {
+              "title": "M1: Foundations",
+              "description": "Authentication, roles, base database, project setup.",
+              "iconName": "Layers"
+            },
+            {
+              "title": "M2: Core workflows",
+              "description": "The must-work flows we defined earlier.",
+              "iconName": "Code"
+            },
+            {
+              "title": "M3: Admin and reporting",
+              "description": "Admin controls and basic reporting or export if required.",
+              "iconName": "FileText"
+            },
+            {
+              "title": "M4: Polish and deployment",
+              "description": "Not endless polishing. Just enough to ship cleanly and deploy in a stable way.",
+              "iconName": "Cloud"
+            }
+          ]
+        },
+        {
+          "id": "timeline-3",
+          "type": "text",
+          "content": "Then I give a range."
+        },
+        {
+          "id": "timeline-4",
+          "type": "text",
+          "content": "A range is honest."
+        },
+        {
+          "id": "timeline-5",
+          "type": "text",
+          "content": "\"It is 3 to 4 weeks,\" not \"exactly 23 days.\""
+        },
+        {
+          "id": "timeline-6",
+          "type": "text",
+          "content": "Unknowns exist. Pretending they do not is how projects collapse."
+        },
+        {
+          "id": "timeline-7",
+          "type": "text",
+          "content": "And I always expose assumptions, clearly, before anyone commits:"
+        },
+        {
+          "id": "timeline-assumptions",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Are payments included or not?",
+            "Is SMS included or not?",
+            "Does it need to be mobile responsive from day one?"
+          ]
+        },
+        {
+          "id": "timeline-8",
+          "type": "text",
+          "content": "Assumptions are not small details. They are the estimate."
+        },
+        {
+          "id": "timeline-9",
+          "type": "text",
+          "content": "If someone hides assumptions, the quote is not confident. It is incomplete."
+        }
+      ]
+    },
+    {
+      "id": "main-content-one-page-template",
+      "title": "The one-page template I use",
+      "blocks": [
+        {
+          "id": "template-1",
+          "type": "text",
+          "content": "If you want estimation to feel real and not fuzzy, use a one-page template."
+        },
+        {
+          "id": "template-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "MVP outcome (one line)",
+            "Roles (list)",
+            "Top 3 workflows",
+            "Entities (nouns)",
+            "Integrations",
+            "Timeline range plus milestones",
+            "Assumptions"
+          ]
+        },
+        {
+          "id": "template-2",
+          "type": "text",
+          "content": "That is it."
+        },
+        {
+          "id": "template-3",
+          "type": "text",
+          "content": "If you can fill that page, you can estimate like a grown-up."
+        },
+        {
+          "id": "template-4",
+          "type": "text",
+          "content": "If you cannot fill that page, you are not ready for a number yet."
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "title": "Final thought",
+      "blocks": [
+        {
+          "id": "conclusion-1",
+          "type": "text",
+          "content": "If someone gives you an MVP quote in five minutes, they are guessing."
+        },
+        {
+          "id": "conclusion-2",
+          "type": "text",
+          "content": "Accurate estimates are not fast because you are smart. They are fast because you have a process that forces clarity."
+        },
+        {
+          "id": "conclusion-3",
+          "type": "text",
+          "content": "If you want, share your idea in five bullets. I will tell you what an MVP would look like and what the realistic range is."
+        }
+      ]
+    }
+  ]
+}
+

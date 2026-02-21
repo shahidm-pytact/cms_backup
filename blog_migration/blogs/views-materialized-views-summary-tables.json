@@ -41,7 +41,7 @@
           "id": "view-code",
           "type": "code",
           "language": "sql",
-          "code": "CREATE VIEW popular_posts AS\nSELECT \n    p.post_id,\n    p.user_id,\n    p.content,\n    COUNT(l.like_id) as total_likes,\n    COUNT(c.comment_id) as total_comments\nFROM posts p\nLEFT JOIN likes l ON p.post_id = l.post_id\nLEFT JOIN comments c ON p.post_id = c.post_id\nWHERE p.created_at >= NOW() - INTERVAL '7 days'\nGROUP BY p.post_id, p.user_id, p.content\nHAVING COUNT(l.like_id) > 10;"
+          "content": "CREATE VIEW popular_posts AS\nSELECT \n    p.post_id,\n    p.user_id,\n    p.content,\n    COUNT(l.like_id) as total_likes,\n    COUNT(c.comment_id) as total_comments\nFROM posts p\nLEFT JOIN likes l ON p.post_id = l.post_id\nLEFT JOIN comments c ON p.post_id = c.post_id\nWHERE p.created_at >= NOW() - INTERVAL '7 days'\nGROUP BY p.post_id, p.user_id, p.content\nHAVING COUNT(l.like_id) > 10;"
         },
         {
           "id": "view-problems-title",
@@ -93,7 +93,7 @@
           "id": "mv-code",
           "type": "code",
           "language": "sql",
-          "code": "CREATE MATERIALIZED VIEW article_stats_daily AS\nSELECT \n    article_id,\n    DATE(created_at) as date,\n    COUNT(DISTINCT view_id) as total_views,\n    COUNT(DISTINCT comment_id) as total_comments,\n    COUNT(DISTINCT share_id) as total_shares\nFROM articles a\nLEFT JOIN article_views av ON a.article_id = av.article_id\nLEFT JOIN comments c ON a.article_id = c.article_id\nLEFT JOIN shares s ON a.article_id = s.article_id\nGROUP BY article_id, DATE(created_at);"
+          "content": "CREATE MATERIALIZED VIEW article_stats_daily AS\nSELECT \n    article_id,\n    DATE(created_at) as date,\n    COUNT(DISTINCT view_id) as total_views,\n    COUNT(DISTINCT comment_id) as total_comments,\n    COUNT(DISTINCT share_id) as total_shares\nFROM articles a\nLEFT JOIN article_views av ON a.article_id = av.article_id\nLEFT JOIN comments c ON a.article_id = c.article_id\nLEFT JOIN shares s ON a.article_id = s.article_id\nGROUP BY article_id, DATE(created_at);"
         },
         {
           "id": "mv-problems-title",
@@ -147,7 +147,7 @@
           "id": "summary-code",
           "type": "code",
           "language": "sql",
-          "code": "CREATE TABLE hourly_event_summary (\n    event_type VARCHAR(100),\n    hour TIMESTAMP,\n    total_events BIGINT,\n    unique_users BIGINT,\n    total_revenue DECIMAL(10,2),\n    PRIMARY KEY (event_type, hour)\n);\n\n-- Incremental update (runs every hour)\nINSERT INTO hourly_event_summary\nSELECT \n    event_type,\n    DATE_TRUNC('hour', event_time) as hour,\n    COUNT(*) as total_events,\n    COUNT(DISTINCT user_id) as unique_users,\n    SUM(revenue) as total_revenue\nFROM events\nWHERE event_time >= CURRENT_DATE\nGROUP BY event_type, DATE_TRUNC('hour', event_time)\nON CONFLICT (event_type, hour) DO UPDATE SET\n    total_events = hourly_event_summary.total_events + EXCLUDED.total_events,\n    unique_users = hourly_event_summary.unique_users + EXCLUDED.unique_users,\n    total_revenue = hourly_event_summary.total_revenue + EXCLUDED.total_revenue;"
+          "content": "CREATE TABLE hourly_event_summary (\n    event_type VARCHAR(100),\n    hour TIMESTAMP,\n    total_events BIGINT,\n    unique_users BIGINT,\n    total_revenue DECIMAL(10,2),\n    PRIMARY KEY (event_type, hour)\n);\n\n-- Incremental update (runs every hour)\nINSERT INTO hourly_event_summary\nSELECT \n    event_type,\n    DATE_TRUNC('hour', event_time) as hour,\n    COUNT(*) as total_events,\n    COUNT(DISTINCT user_id) as unique_users,\n    SUM(revenue) as total_revenue\nFROM events\nWHERE event_time >= CURRENT_DATE\nGROUP BY event_type, DATE_TRUNC('hour', event_time)\nON CONFLICT (event_type, hour) DO UPDATE SET\n    total_events = hourly_event_summary.total_events + EXCLUDED.total_events,\n    unique_users = hourly_event_summary.unique_users + EXCLUDED.unique_users,\n    total_revenue = hourly_event_summary.total_revenue + EXCLUDED.total_revenue;"
         },
         {
           "id": "summary-problems-title",
@@ -205,7 +205,7 @@
           "id": "at-select-code",
           "type": "code",
           "language": "sql",
-          "code": "SELECT * FROM mv_org_dashboard;      -- Materialized view\nSELECT * FROM org_dashboard_summary; -- Summary table"
+          "content": "SELECT * FROM mv_org_dashboard;      -- Materialized view\nSELECT * FROM org_dashboard_summary; -- Summary table"
         },
         {
           "id": "at-select-note",
@@ -231,7 +231,7 @@
           "id": "mv-refresh-code",
           "type": "code",
           "language": "sql",
-          "code": "REFRESH MATERIALIZED VIEW mv_org_dashboard;"
+          "content": "REFRESH MATERIALIZED VIEW mv_org_dashboard;"
         },
         {
           "id": "mv-refresh-steps",
@@ -270,7 +270,7 @@
           "id": "summary-update-code",
           "type": "code",
           "language": "sql",
-          "code": "-- Example: one new lead inserted for org_id = 'X'\n-- Update only that row:\nUPDATE org_dashboard_summary\nSET total_leads = total_leads + 1\nWHERE org_id = 'X';\n\n-- Or recompute only that org:\nUPDATE org_dashboard_summary\nSET total_leads = (SELECT COUNT(*) FROM leads WHERE org_id = 'X')\nWHERE org_id = 'X';"
+          "content": "-- Example: one new lead inserted for org_id = 'X'\n-- Update only that row:\nUPDATE org_dashboard_summary\nSET total_leads = total_leads + 1\nWHERE org_id = 'X';\n\n-- Or recompute only that org:\nUPDATE org_dashboard_summary\nSET total_leads = (SELECT COUNT(*) FROM leads WHERE org_id = 'X')\nWHERE org_id = 'X';"
         },
         {
           "id": "summary-update-note",
@@ -356,7 +356,7 @@
           "id": "approach1-code",
           "type": "code",
           "language": "sql",
-          "code": "SELECT p.post_id, p.user_id, p.content,\n    COUNT(DISTINCT l.like_id) as total_likes,\n    COUNT(DISTINCT c.comment_id) as total_comments,\n    COUNT(DISTINCT s.share_id) as total_shares\nFROM posts p\nLEFT JOIN likes l ON p.post_id = l.post_id\nLEFT JOIN comments c ON p.post_id = c.post_id\nLEFT JOIN shares s ON p.post_id = s.post_id\nWHERE p.created_at >= NOW() - INTERVAL '30 days'\nGROUP BY p.post_id, p.user_id, p.content\nORDER BY (total_likes + total_comments + total_shares) DESC\nLIMIT 100;"
+          "content": "SELECT p.post_id, p.user_id, p.content,\n    COUNT(DISTINCT l.like_id) as total_likes,\n    COUNT(DISTINCT c.comment_id) as total_comments,\n    COUNT(DISTINCT s.share_id) as total_shares\nFROM posts p\nLEFT JOIN likes l ON p.post_id = l.post_id\nLEFT JOIN comments c ON p.post_id = c.post_id\nLEFT JOIN shares s ON p.post_id = s.post_id\nWHERE p.created_at >= NOW() - INTERVAL '30 days'\nGROUP BY p.post_id, p.user_id, p.content\nORDER BY (total_likes + total_comments + total_shares) DESC\nLIMIT 100;"
         },
         {
           "id": "approach1-time",
@@ -377,7 +377,7 @@
           "id": "approach3-code",
           "type": "code",
           "language": "sql",
-          "code": "CREATE MATERIALIZED VIEW mv_popular_posts_30days AS ...;\nCREATE INDEX idx_mv_posts_engagement ON mv_popular_posts_30days(engagement_score DESC);\nREFRESH MATERIALIZED VIEW mv_popular_posts_30days;"
+          "content": "CREATE MATERIALIZED VIEW mv_popular_posts_30days AS ...;\nCREATE INDEX idx_mv_posts_engagement ON mv_popular_posts_30days(engagement_score DESC);\nREFRESH MATERIALIZED VIEW mv_popular_posts_30days;"
         },
         {
           "id": "approach3-time",
@@ -398,7 +398,7 @@
           "id": "perf-comparison-table",
           "type": "code",
           "language": "text",
-          "code": "| Approach          | Query Time    | Refresh/Update Time | Improvement |\n|-------------------|---------------|---------------------|-------------|\n| Direct Query      | 35-50s        | N/A                 | Baseline    |\n| Regular View      | 32-48s        | N/A                 | ~10%        |\n| MV (no index)     | 3-6s          | 45-60s              | ~85%        |\n| MV (indexed)      | 0.15-0.4s     | 45-60s              | 99%+        |\n| Summary Table     | 0.05-0.12s    | 2-5s                | 99.7%+      |"
+          "content": "| Approach          | Query Time    | Refresh/Update Time | Improvement |\n|-------------------|---------------|---------------------|-------------|\n| Direct Query      | 35-50s        | N/A                 | Baseline    |\n| Regular View      | 32-48s        | N/A                 | ~10%        |\n| MV (no index)     | 3-6s          | 45-60s              | ~85%        |\n| MV (indexed)      | 0.15-0.4s     | 45-60s              | 99%+        |\n| Summary Table     | 0.05-0.12s    | 2-5s                | 99.7%+      |"
         },
         {
           "id": "business-impact-title",
@@ -446,7 +446,7 @@
           "id": "index-example-code",
           "type": "code",
           "language": "sql",
-          "code": "CREATE MATERIALIZED VIEW mv_article_performance AS\nSELECT \n    author_id,\n    category,\n    DATE_TRUNC('week', published_at) as week,\n    COUNT(*) as article_count,\n    SUM(view_count) as total_views\nFROM articles\nGROUP BY author_id, category, DATE_TRUNC('week', published_at);\n\n-- Step 1: Analyze query patterns\n-- Will filter by author_id? Yes\n-- Will filter by week? Yes  \n-- Will sort by total_views? Yes\n\n-- Step 2: Create indexes BEFORE first refresh\nCREATE UNIQUE INDEX idx_mv_article_unique \nON mv_article_performance(author_id, category, week);\n\nCREATE INDEX idx_mv_article_author_week \nON mv_article_performance(author_id, week);\n\nCREATE INDEX idx_mv_article_views \nON mv_article_performance(total_views DESC);\n\n-- Step 3: Refresh\nREFRESH MATERIALIZED VIEW mv_article_performance;"
+          "content": "CREATE MATERIALIZED VIEW mv_article_performance AS\nSELECT \n    author_id,\n    category,\n    DATE_TRUNC('week', published_at) as week,\n    COUNT(*) as article_count,\n    SUM(view_count) as total_views\nFROM articles\nGROUP BY author_id, category, DATE_TRUNC('week', published_at);\n\n-- Step 1: Analyze query patterns\n-- Will filter by author_id? Yes\n-- Will filter by week? Yes  \n-- Will sort by total_views? Yes\n\n-- Step 2: Create indexes BEFORE first refresh\nCREATE UNIQUE INDEX idx_mv_article_unique \nON mv_article_performance(author_id, category, week);\n\nCREATE INDEX idx_mv_article_author_week \nON mv_article_performance(author_id, week);\n\nCREATE INDEX idx_mv_article_views \nON mv_article_performance(total_views DESC);\n\n-- Step 3: Refresh\nREFRESH MATERIALIZED VIEW mv_article_performance;"
         },
         {
           "id": "index-result",
@@ -468,7 +468,7 @@
           "id": "index-bp1-code",
           "type": "code",
           "language": "sql",
-          "code": "-- WRONG: Create MV, refresh, then index (very slow!)\nCREATE MATERIALIZED VIEW mv_stats AS SELECT ...;\nREFRESH MATERIALIZED VIEW mv_stats;  -- Loads millions of rows\nCREATE INDEX idx_mv_date ON mv_stats(date);  -- Takes 10+ minutes!\n\n-- CORRECT: Create MV, index empty table, then refresh\nCREATE MATERIALIZED VIEW mv_stats AS SELECT ...;\nCREATE INDEX idx_mv_date ON mv_stats(date);  -- Takes 1 second!\nREFRESH MATERIALIZED VIEW mv_stats;"
+          "content": "-- WRONG: Create MV, refresh, then index (very slow!)\nCREATE MATERIALIZED VIEW mv_stats AS SELECT ...;\nREFRESH MATERIALIZED VIEW mv_stats;  -- Loads millions of rows\nCREATE INDEX idx_mv_date ON mv_stats(date);  -- Takes 10+ minutes!\n\n-- CORRECT: Create MV, index empty table, then refresh\nCREATE MATERIALIZED VIEW mv_stats AS SELECT ...;\nCREATE INDEX idx_mv_date ON mv_stats(date);  -- Takes 1 second!\nREFRESH MATERIALIZED VIEW mv_stats;"
         },
         {
           "id": "index-bp1-why",
@@ -501,7 +501,7 @@
           "id": "index-bp3-code",
           "type": "code",
           "language": "sql",
-          "code": "EXPLAIN ANALYZE\nSELECT * FROM mv_article_performance WHERE author_id = 123;"
+          "content": "EXPLAIN ANALYZE\nSELECT * FROM mv_article_performance WHERE author_id = 123;"
         },
         {
           "id": "index-bp3-look",
@@ -529,7 +529,7 @@
           "id": "refresh-blocking-code",
           "type": "code",
           "language": "sql",
-          "code": "REFRESH MATERIALIZED VIEW mv_article_stats;  -- Takes 45 seconds\n-- All queries blocked during this time!"
+          "content": "REFRESH MATERIALIZED VIEW mv_article_stats;  -- Takes 45 seconds\n-- All queries blocked during this time!"
         },
         {
           "id": "refresh-blocking-result",
@@ -579,7 +579,7 @@
           "id": "refresh-requirements-code",
           "type": "code",
           "language": "sql",
-          "code": "-- Step 1: Create unique index (what makes each row unique?)\nCREATE UNIQUE INDEX idx_mv_article_unique \nON mv_article_stats(author_id, category, week);\n\n-- Step 2: Use concurrent refresh\nREFRESH MATERIALIZED VIEW CONCURRENTLY mv_article_stats;"
+          "content": "-- Step 1: Create unique index (what makes each row unique?)\nCREATE UNIQUE INDEX idx_mv_article_unique \nON mv_article_stats(author_id, category, week);\n\n-- Step 2: Use concurrent refresh\nREFRESH MATERIALIZED VIEW CONCURRENTLY mv_article_stats;"
         },
         {
           "id": "refresh-step-5",
@@ -617,7 +617,7 @@
           "id": "scheduling-option1-code",
           "type": "code",
           "language": "sql",
-          "code": "CREATE EXTENSION IF NOT EXISTS pg_cron;\nSELECT cron.schedule(\n    'refresh-mv',\n    '0 * * * *',  -- Every hour\n    $$REFRESH MATERIALIZED VIEW CONCURRENTLY mv_article_stats$$\n);"
+          "content": "CREATE EXTENSION IF NOT EXISTS pg_cron;\nSELECT cron.schedule(\n    'refresh-mv',\n    '0 * * * *',  -- Every hour\n    $$REFRESH MATERIALIZED VIEW CONCURRENTLY mv_article_stats$$\n);"
         },
         {
           "id": "scheduling-step-2",
@@ -628,7 +628,7 @@
           "id": "scheduling-option2-code",
           "type": "code",
           "language": "bash",
-          "code": "0 * * * * psql -d your_db -c \"REFRESH MATERIALIZED VIEW CONCURRENTLY mv_article_stats;\""
+          "content": "0 * * * * psql -d your_db -c \"REFRESH MATERIALIZED VIEW CONCURRENTLY mv_article_stats;\""
         },
         {
           "id": "scheduling-step-3",
@@ -639,7 +639,7 @@
           "id": "scheduling-option3-code",
           "type": "code",
           "language": "sql",
-          "code": "CREATE OR REPLACE FUNCTION refresh_mv_safely()\nRETURNS void AS $$\nBEGIN\n    IF pg_try_advisory_lock(12345) THEN\n        BEGIN\n            REFRESH MATERIALIZED VIEW CONCURRENTLY mv_article_stats;\n        EXCEPTION WHEN OTHERS THEN\n            RAISE NOTICE 'Refresh failed: %', SQLERRM;\n        END;\n        PERFORM pg_advisory_unlock(12345);\n    ELSE\n        RAISE NOTICE 'Refresh already in progress, skipping';\n    END IF;\nEND;\n$$ LANGUAGE plpgsql;"
+          "content": "CREATE OR REPLACE FUNCTION refresh_mv_safely()\nRETURNS void AS $$\nBEGIN\n    IF pg_try_advisory_lock(12345) THEN\n        BEGIN\n            REFRESH MATERIALIZED VIEW CONCURRENTLY mv_article_stats;\n        EXCEPTION WHEN OTHERS THEN\n            RAISE NOTICE 'Refresh failed: %', SQLERRM;\n        END;\n        PERFORM pg_advisory_unlock(12345);\n    ELSE\n        RAISE NOTICE 'Refresh already in progress, skipping';\n    END IF;\nEND;\n$$ LANGUAGE plpgsql;"
         },
         {
           "id": "refresh-step-7",
@@ -683,7 +683,7 @@
           "id": "tuning-2-code",
           "type": "code",
           "language": "sql",
-          "code": "-- Update statistics\nANALYZE articles;\nANALYZE article_views;\n\n-- Clean up bloat\nVACUUM ANALYZE articles;\n\n-- Check for bloat\nSELECT * FROM pg_stat_user_tables WHERE n_dead_tup > 1000;"
+          "content": "-- Update statistics\nANALYZE articles;\nANALYZE article_views;\n\n-- Clean up bloat\nVACUUM ANALYZE articles;\n\n-- Check for bloat\nSELECT * FROM pg_stat_user_tables WHERE n_dead_tup > 1000;"
         },
         {
           "id": "tuning-3-title",
@@ -699,7 +699,7 @@
           "id": "tuning-3-code",
           "type": "code",
           "language": "sql",
-          "code": "-- Too complex: Multiple joins, subqueries\nCREATE MATERIALIZED VIEW mv_complex AS\nSELECT a.article_id, au.name as author_name, c.name as category_name,\n    (SELECT COUNT(*) FROM article_tags WHERE article_id = a.article_id) as tag_count\nFROM articles a\nJOIN authors au ON a.author_id = au.author_id\nJOIN categories c ON a.category_id = c.category_id;\n\n-- Simpler: Only what you need\nCREATE MATERIALIZED VIEW mv_simple AS\nSELECT article_id, author_id, category_id, view_count, comment_count\nFROM articles;"
+          "content": "-- Too complex: Multiple joins, subqueries\nCREATE MATERIALIZED VIEW mv_complex AS\nSELECT a.article_id, au.name as author_name, c.name as category_name,\n    (SELECT COUNT(*) FROM article_tags WHERE article_id = a.article_id) as tag_count\nFROM articles a\nJOIN authors au ON a.author_id = au.author_id\nJOIN categories c ON a.category_id = c.category_id;\n\n-- Simpler: Only what you need\nCREATE MATERIALIZED VIEW mv_simple AS\nSELECT article_id, author_id, category_id, view_count, comment_count\nFROM articles;"
         },
         {
           "id": "tuning-4-title",
@@ -726,7 +726,7 @@
           "id": "tuning-5-code",
           "type": "code",
           "language": "sql",
-          "code": "CREATE TABLE mv_refresh_log (\n    mv_name TEXT,\n    refresh_start TIMESTAMP,\n    refresh_end TIMESTAMP,\n    duration INTERVAL,\n    rows_refreshed BIGINT\n);\n\nCREATE OR REPLACE FUNCTION refresh_mv_with_logging(mv_name TEXT)\nRETURNS void AS $$\nDECLARE\n    start_time TIMESTAMP := NOW();\n    end_time TIMESTAMP;\n    row_count BIGINT;\nBEGIN\n    EXECUTE format('REFRESH MATERIALIZED VIEW CONCURRENTLY %I', mv_name);\n    end_time := NOW();\n    EXECUTE format('SELECT COUNT(*) FROM %I', mv_name) INTO row_count;\n    INSERT INTO mv_refresh_log VALUES (mv_name, start_time, end_time, \n        end_time - start_time, row_count);\nEND;\n$$ LANGUAGE plpgsql;"
+          "content": "CREATE TABLE mv_refresh_log (\n    mv_name TEXT,\n    refresh_start TIMESTAMP,\n    refresh_end TIMESTAMP,\n    duration INTERVAL,\n    rows_refreshed BIGINT\n);\n\nCREATE OR REPLACE FUNCTION refresh_mv_with_logging(mv_name TEXT)\nRETURNS void AS $$\nDECLARE\n    start_time TIMESTAMP := NOW();\n    end_time TIMESTAMP;\n    row_count BIGINT;\nBEGIN\n    EXECUTE format('REFRESH MATERIALIZED VIEW CONCURRENTLY %I', mv_name);\n    end_time := NOW();\n    EXECUTE format('SELECT COUNT(*) FROM %I', mv_name) INTO row_count;\n    INSERT INTO mv_refresh_log VALUES (mv_name, start_time, end_time, \n        end_time - start_time, row_count);\nEND;\n$$ LANGUAGE plpgsql;"
         }
       ]
     },
@@ -837,7 +837,7 @@
           "id": "gotcha-1-code",
           "type": "code",
           "language": "sql",
-          "code": "EXPLAIN ANALYZE SELECT * FROM mv_stats WHERE author_id = 123;\n-- If you see \"Seq Scan\", add an index:\nCREATE INDEX idx_mv_author ON mv_stats(author_id);"
+          "content": "EXPLAIN ANALYZE SELECT * FROM mv_stats WHERE author_id = 123;\n-- If you see \"Seq Scan\", add an index:\nCREATE INDEX idx_mv_author ON mv_stats(author_id);"
         },
         {
           "id": "gotcha-2-title",
@@ -858,7 +858,7 @@
           "id": "gotcha-2-fix",
           "type": "code",
           "language": "sql",
-          "code": "-- Identify what makes each row unique\nCREATE UNIQUE INDEX idx_mv_unique \nON mv_stats(author_id, category, week);"
+          "content": "-- Identify what makes each row unique\nCREATE UNIQUE INDEX idx_mv_unique \nON mv_stats(author_id, category, week);"
         },
         {
           "id": "gotcha-3-title",
@@ -899,7 +899,7 @@
           "id": "gotcha-5-code",
           "type": "code",
           "language": "sql",
-          "code": "CREATE TABLE mv_metadata (\n    mv_name TEXT PRIMARY KEY,\n    last_refresh_at TIMESTAMP,\n    rows_count BIGINT\n);\n\n-- Update after each refresh\nINSERT INTO mv_metadata (mv_name, last_refresh_at, rows_count)\nVALUES ('mv_stats', NOW(), (SELECT COUNT(*) FROM mv_stats))\nON CONFLICT (mv_name) DO UPDATE SET\n    last_refresh_at = EXCLUDED.last_refresh_at,\n    rows_count = EXCLUDED.rows_count;"
+          "content": "CREATE TABLE mv_metadata (\n    mv_name TEXT PRIMARY KEY,\n    last_refresh_at TIMESTAMP,\n    rows_count BIGINT\n);\n\n-- Update after each refresh\nINSERT INTO mv_metadata (mv_name, last_refresh_at, rows_count)\nVALUES ('mv_stats', NOW(), (SELECT COUNT(*) FROM mv_stats))\nON CONFLICT (mv_name) DO UPDATE SET\n    last_refresh_at = EXCLUDED.last_refresh_at,\n    rows_count = EXCLUDED.rows_count;"
         },
         {
           "id": "gotcha-5-important",
@@ -972,7 +972,7 @@
           "id": "before-code",
           "type": "code",
           "language": "sql",
-          "code": "SELECT author_id, category, DATE_TRUNC('week', published_at) as week,\n    COUNT(*) as article_count, SUM(view_count) as total_views\nFROM articles\nWHERE published_at >= CURRENT_DATE - INTERVAL '12 weeks'\nGROUP BY author_id, category, DATE_TRUNC('week', published_at)\nORDER BY total_views DESC;"
+          "content": "SELECT author_id, category, DATE_TRUNC('week', published_at) as week,\n    COUNT(*) as article_count, SUM(view_count) as total_views\nFROM articles\nWHERE published_at >= CURRENT_DATE - INTERVAL '12 weeks'\nGROUP BY author_id, category, DATE_TRUNC('week', published_at)\nORDER BY total_views DESC;"
         },
         {
           "id": "before-time",
@@ -988,7 +988,7 @@
           "id": "after-code",
           "type": "code",
           "language": "sql",
-          "code": "CREATE MATERIALIZED VIEW mv_author_performance AS ...;\nCREATE UNIQUE INDEX idx_mv_author_unique ON mv_author_performance(author_id, category, week);\nCREATE INDEX idx_mv_author_week ON mv_author_performance(author_id, week);\nCREATE INDEX idx_mv_author_views ON mv_author_performance(total_views DESC);\nREFRESH MATERIALIZED VIEW CONCURRENTLY mv_author_performance;"
+          "content": "CREATE MATERIALIZED VIEW mv_author_performance AS ...;\nCREATE UNIQUE INDEX idx_mv_author_unique ON mv_author_performance(author_id, category, week);\nCREATE INDEX idx_mv_author_week ON mv_author_performance(author_id, week);\nCREATE INDEX idx_mv_author_views ON mv_author_performance(total_views DESC);\nREFRESH MATERIALIZED VIEW CONCURRENTLY mv_author_performance;"
         },
         {
           "id": "after-stats",
@@ -1020,7 +1020,7 @@
           "id": "tracking-code",
           "type": "code",
           "language": "sql",
-          "code": "CREATE TABLE mv_refresh_metadata (\n    mv_name TEXT PRIMARY KEY,\n    last_refresh_at TIMESTAMP,\n    refresh_duration INTERVAL,\n    rows_count BIGINT\n);\n\nCREATE OR REPLACE FUNCTION refresh_mv_with_metadata(mv_name TEXT)\nRETURNS void AS $$\nDECLARE\n    start_time TIMESTAMP := NOW();\n    end_time TIMESTAMP;\n    row_count BIGINT;\nBEGIN\n    EXECUTE format('REFRESH MATERIALIZED VIEW CONCURRENTLY %I', mv_name);\n    end_time := NOW();\n    EXECUTE format('SELECT COUNT(*) FROM %I', mv_name) INTO row_count;\n    INSERT INTO mv_refresh_metadata VALUES \n        (mv_name, end_time, end_time - start_time, row_count)\n    ON CONFLICT (mv_name) DO UPDATE SET\n        last_refresh_at = EXCLUDED.last_refresh_at,\n        refresh_duration = EXCLUDED.refresh_duration,\n        rows_count = EXCLUDED.rows_count;\nEND;\n$$ LANGUAGE plpgsql;"
+          "content": "CREATE TABLE mv_refresh_metadata (\n    mv_name TEXT PRIMARY KEY,\n    last_refresh_at TIMESTAMP,\n    refresh_duration INTERVAL,\n    rows_count BIGINT\n);\n\nCREATE OR REPLACE FUNCTION refresh_mv_with_metadata(mv_name TEXT)\nRETURNS void AS $$\nDECLARE\n    start_time TIMESTAMP := NOW();\n    end_time TIMESTAMP;\n    row_count BIGINT;\nBEGIN\n    EXECUTE format('REFRESH MATERIALIZED VIEW CONCURRENTLY %I', mv_name);\n    end_time := NOW();\n    EXECUTE format('SELECT COUNT(*) FROM %I', mv_name) INTO row_count;\n    INSERT INTO mv_refresh_metadata VALUES \n        (mv_name, end_time, end_time - start_time, row_count)\n    ON CONFLICT (mv_name) DO UPDATE SET\n        last_refresh_at = EXCLUDED.last_refresh_at,\n        refresh_duration = EXCLUDED.refresh_duration,\n        rows_count = EXCLUDED.rows_count;\nEND;\n$$ LANGUAGE plpgsql;"
         }
       ]
     },

@@ -1,0 +1,145 @@
+{
+  "metadata": {
+    "slug": "methodology-to-generate-best-from-ai",
+    "title": "The Methodology to Generate Best from AI",
+    "subtitle": "Reading, writing, and thinking, the fundamentals that make AI work for you.",
+    "description": "Why the AI bubble is killing your thinking process, and how the fundamentals, reading, writing, and thinking, remain the only way to get the best out of AI.",
+    "author": "Kaushal Khokhar",
+    "authorImg": "https://media.licdn.com/dms/image/v2/D4D03AQFGxBtybrn-RQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1728039772945?e=2147483647&v=beta&t=ndiipYzFWpMNnIv5wKyG8wXD_a9wXMt2HYKQK5X8FrM",
+    "publishedDate": "2026-01-31T10:00:00.000Z",
+    "readingTime": "8 min read",
+    "heroQuote": "No technology will replace these basic things - Never. You have to keep reading good things, keep writing and noting down, and allow your brain to struggle.",
+    "blogImage": "/images/blog/ai-thinking-workflow.webp",
+    "metaDescription": "Why the AI bubble is killing your thinking process. The fundamentals, reading, writing, and thinking, remain the only way to get the best out of AI. A practical story with Lovable and ChatGPT.",
+    "keywords": ["AI", "productivity", "reading", "writing", "thinking", "Lovable", "ChatGPT", "fundamentals", "methodology", "best practices"]
+  },
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "blocks": [
+        {
+          "id": "intro-1",
+          "type": "text",
+          "content": "The AI bubble is killing your thinking process. I am consciously making this statement by observing the way people work after the launch of AI. From instagrams reels to linkedin posts everywhere, a person or company is creating mindless content around AI tools and use cases. Literally it is really hard to find the real jam, real thoughts, real thinking and true knowledge. The crowd is getting influenced by those stories."
+        },
+        {
+          "id": "intro-2",
+          "type": "text",
+          "content": "This is human psychology where one gets carried away in the majority flow. The crowd seems to have lost their patience, lost their thinking, lost their basic process to build valuable things. 95% of the people are following those reels and creating a similar pattern to leverage AI without doing any hard work, without investing in proper research and without spending their time on noting down things. They think \"AI will think on behalf of me and AI will do everything that I was doing so far\". They seek another tool on Google to replace their work. Oh really!! I can only say \"You are one of the foolish people influenced by the AI hype\"."
+        }
+      ]
+    },
+    {
+      "id": "main-content-fundamentals",
+      "title": "The Fundamentals That Never Change",
+      "blocks": [
+        {
+          "id": "fund-1",
+          "type": "text",
+          "content": "Every innovation is built to help, support and create ease of use. AI is not an outlier. I truly respect AI and its use cases. AI can help you speed up things like refining text, parsing pdfs, generating codes and images and many more. But fundamental things will never ever change. I don't want to share any technology or philosophy here. I want to highlight the basics which will remain forever and ever - with or without AI."
+        },
+        {
+          "id": "fund-2",
+          "type": "text",
+          "content": "Those fundamentals are simple. Reading, Writing and Thinking. No technology will replace these basic things - Never. You have to keep reading good things in whichever field you belong to. You have to keep writing and noting down the things as per your objective and you need to allow your brain to struggle to make yourself separate from the crowd. Looks really basic - yet so powerful. There is no shortcut or true replacement for this. If you have the mindset to apply this in your work and life then AI can make you feel like no other. You can literally play with AI and its tools to reach your defined objective. But only once you have gone through the basics - Reading, Writing and Thinking."
+        },
+        {
+          "id": "fund-3",
+          "type": "text",
+          "content": "Is this new innovation? Yes for me it is innovation because no one is even thinking about these fundamental aspects. Moreover they are trying to create a hype that AI will replace your job and work and what not. You are getting handicapped by breaking your natural process to convert thoughts into material. The material can be software or hardware and or anything. Unknowingly you are moving into a trap. That is why the fundamentals that I am sharing here are new innovations to me."
+        }
+      ]
+    },
+    {
+      "id": "main-content-no-shortcuts",
+      "title": "Do Not Bypass the Basics",
+      "blocks": [
+        {
+          "id": "shortcut-1",
+          "type": "text",
+          "content": "Do not even think of leveraging any AI tools without making yourself pass through these basics. Moreover AI will cost you time and money and you will end up creating nothing meaningful. I have seen and experienced those stories everywhere. People post reels and stories that we have built a web browser in just one week using AI - please someone ask if it is guaranteed to work as a browser for the next one or two decades like Google or Safari? Is it guaranteed to solve real world users' problems? If not then please keep this boolshit story with you."
+        },
+        {
+          "id": "shortcut-2",
+          "type": "highlight",
+          "content": "The real value and differentiator can not be magically built using AI. Open your mind, ready to struggle, make decisions, compile your thoughts in notes and then use AI - and AI will literally dance with you to shine on stage.",
+          "variant": "primary"
+        },
+        {
+          "id": "shortcut-3",
+          "type": "text",
+          "content": "This is hard to digest but so true. Don't find any shortcuts. AI is a smart pet who is trained to follow your intelligence. Never ever make it reversible."
+        }
+      ]
+    },
+    {
+      "id": "main-content-personal-story",
+      "title": "A Real Story: Lovable, $100, and the Right Process",
+      "blocks": [
+        {
+          "id": "story-1",
+          "type": "text",
+          "content": "The motivation I got to write this blog is from one of my recent experiences. I added 100$ credit to Lovable and asked my developer to create a demo UI for my product. By the end of the day he came to me. I asked what did you build - he said one TODO page and some changes to prospect building features. I asked how many credits we have now. He said zero."
+        },
+        {
+          "id": "story-2",
+          "type": "text",
+          "content": "That was shocking to me - I asked again what? He was like yes all credits are burned."
+        },
+        {
+          "id": "story-3",
+          "type": "text",
+          "content": "Then I observed his activities done with Lovable, his prompts and realised that he is not using his own knowledge which he already has and directly jumping to AI to generate outcomes for him. He is not following his natural process of turning ideas into material. Instead trusting AI to make it happen."
+        },
+        {
+          "id": "story-4",
+          "type": "text",
+          "content": "Then I thought that I want to change this mindset. I want to teach my team what is the right way to work with AI. I took the same challenge to use Lovable to create a demo UI for our product. Without jumping into Lovable to write a prompt I read the Lovable blogs and features. What they recommend to generate best out of this. Then I went to ChatGPT to understand what the community does to solve the similar challenges using Lovable. What is the right way to work with Lovable - what are do's and don'ts."
+        },
+        {
+          "id": "story-5",
+          "type": "text",
+          "content": "Once the research is done, I finally wrote down what exactly I want to build. I was literally writing, reading and thinking about my end goal. I was trying to make corrections by revolving around Google, ChatGPT and notes. Yes, I did multiple iterations to make it perfect. Perfect in terms of what exactly I want, not grammatically. It took around 4 hours to complete."
+        },
+        {
+          "id": "story-6",
+          "type": "text",
+          "content": "Once these fundamentals are done - I leveraged ChatGPT to create a prompt for me based on my notes. I shared them with Lovable. It worked like magic for me just because I have not bypassed the fundamental practice of working. I burned 19.6 credits to generate what I wanted. The prompts were so accurate that I do not even need to give subsequent prompts to correct it. The result was accurate, and the demo went perfect as the team got a clear picture of the outcome. The accuracy does not mean the pixel-perfect in design. The goal was to allow the team to visualise what to be done. That was remarkable hence it was accurate."
+        },
+        {
+          "id": "story-7",
+          "type": "text",
+          "content": "That feature was not that simple - I am damn sure that if I would have given the same goal to my developer he would have wasted my 100$ and moreover would not have generated the outcome that I wanted. It is not that he is not capable enough or I am doing something magical. The only reason is - not allowing yourself to struggle with the natural process of creation."
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "title": "Conclusion",
+      "blocks": [
+        {
+          "id": "conclusion-1",
+          "type": "text",
+          "content": "The lessons are simple"
+        },
+        {
+          "id": "conclusion-list",
+          "type": "list",
+          "variant": "bullet",
+          "items": [
+            "Keep reading good and valuable articles",
+            "Keep noting down things - note down what you want.",
+            "Allow yourself to struggle and think",
+            "Then go for AI like no other"
+          ]
+        },
+        {
+          "id": "conclusion-2",
+          "type": "text",
+          "content": "See the magic happens."
+        }
+      ]
+    }
+  ]
+}
