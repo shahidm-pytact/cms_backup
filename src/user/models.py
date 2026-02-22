@@ -30,7 +30,7 @@ class User(Base):
         index=True,
     )
     name: Mapped[str] = mapped_column(
-        String(255),
+        String(240),
         nullable=False,
     )
 
