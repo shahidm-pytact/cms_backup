@@ -93,7 +93,9 @@ jobs:
             sleep 2
           done
 
-          NETWORK="backend_cms_network"
+          NETWORK=$(docker compose ps -q db | xargs docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null | head -1)
+          if [ -z "$NETWORK" ]; then echo "ERROR: Could not get DB network name"; exit 1; fi
+          echo "Using network: $NETWORK"
           echo "Running migrations..."
           docker run --rm --env-file .env --network "$NETWORK" cms-api:latest alembic upgrade head || \
             { echo "ERROR: Migrations failed"; exit 1; }
