@@ -41,6 +41,53 @@ jobs:
         run: |
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /opt/apps/cms-blogs-management/backend"
 
+      - name: Generate .env from GitHub secrets and variables
+        run: |
+          # Write .env from Production environment (secrets + vars). Do not print contents.
+          cat > .env << 'ENVEOF'
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_USER=${{ vars.POSTGRES_USER }}
+          POSTGRES_DB=${{ vars.POSTGRES_DB }}
+          AUTH_SECRET_KEY=${{ vars.AUTH_SECRET_KEY }}
+          AUTH_ALGORITHM=${{ vars.AUTH_ALGORITHM }}
+          AUTH_ACCESS_TOKEN_EXPIRE_MINUTES=${{ vars.AUTH_ACCESS_TOKEN_EXPIRE_MINUTES }}
+          AUTH_PASSWORD_RESET_EXPIRY_HOURS=${{ vars.AUTH_PASSWORD_RESET_EXPIRY_HOURS }}
+          AUTH_PASSWORD_RESET_TOKEN_EXPIRE_HOURS=${{ vars.AUTH_PASSWORD_RESET_EXPIRY_HOURS }}
+          AUTH_INVITATION_EXPIRY_DAYS=${{ vars.AUTH_INVITATION_EXPIRY_DAYS }}
+          AUTH_INVITATION_TOKEN_EXPIRE_DAYS=${{ vars.AUTH_INVITATION_EXPIRY_DAYS }}
+          AUTH_JWT_ISSUER=${{ vars.AUTH_JWT_ISSUER }}
+          API_TITLE=${{ vars.API_TITLE }}
+          API_VERSION=${{ vars.API_VERSION }}
+          API_PREFIX=${{ vars.API_PREFIX }}
+          ENVIRONMENT=${{ vars.ENVIRONMENT }}
+          DEBUG=${{ vars.DEBUG }}
+          ALLOWED_IMAGE_TYPES=${{ vars.ALLOWED_IMAGE_TYPES }}
+          MAX_IMAGE_SIZE_MB=${{ vars.MAX_IMAGE_SIZE_MB }}
+          STORAGE_BASE_PATH=${{ vars.STORAGE_BASE_PATH }}
+          EMAIL_FRONTEND_URL=${{ vars.EMAIL_FRONTEND_URL }}
+          EMAIL_SMTP_HOST=${{ vars.EMAIL_SMTP_HOST }}
+          EMAIL_SMTP_PORT=${{ vars.EMAIL_SMTP_PORT }}
+          EMAIL_SMTP_USERNAME=${{ vars.EMAIL_SMTP_USERNAME }}
+          EMAIL_SMTP_PASSWORD=${{ vars.EMAIL_SMTP_PASSWORD }}
+          EMAIL_SMTP_FROM_EMAIL=${{ vars.EMAIL_SMTP_FROM_EMAIL }}
+          BLOG_REVALIDATION_WEBHOOK_SECRET=${{ vars.BLOG_REVALIDATION_WEBHOOK_SECRET }}
+          BLOG_REVALIDATION_WEBHOOK_URL=${{ vars.BLOG_REVALIDATION_WEBHOOK_URL }}
+          NEXT_API_SECRET=${{ vars.NEXT_API_SECRET }}
+          CORS_ORIGINS=${{ vars.CORS_ORIGINS }}
+          CORS_ALLOW_CREDENTIALS=${{ vars.CORS_ALLOW_CREDENTIALS }}
+          CORS_ALLOW_METHODS=${{ vars.CORS_ALLOW_METHODS }}
+          CORS_ALLOW_HEADERS=${{ vars.CORS_ALLOW_HEADERS }}
+          GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ vars.GOOGLE_CLIENT_SECRET }}
+          DB_PORT=${{ vars.DB_PORT }}
+          PERMISSION_AUDIT_LOG_ENABLED=${{ vars.PERMISSION_AUDIT_LOG_ENABLED }}
+          PERMISSION_AUDIT_LOG_DENIED_ALL=${{ vars.PERMISSION_AUDIT_LOG_DENIED_ALL }}
+          PERMISSION_CACHE_ENABLED=${{ vars.PERMISSION_CACHE_ENABLED }}
+          PERMISSION_CACHE_FALLBACK_TO_DB=${{ vars.PERMISSION_CACHE_FALLBACK_TO_DB }}
+          ENVEOF
+          echo "Generated .env ($(wc -l < .env) lines)"
+
       - name: Build Docker image
         run: |
           export DOCKER_BUILDKIT=1
@@ -55,10 +102,11 @@ jobs:
           FILE_SIZE=$(stat -c%s cms-api.tar.gz 2>/dev/null || stat -f%z cms-api.tar.gz 2>/dev/null || echo "0")
           [ "$FILE_SIZE" -ge 100000 ] || (echo "ERROR: cms-api.tar.gz too small ($FILE_SIZE bytes)" && exit 1)
 
-      - name: Transfer image and docker-compose to server
+      - name: Transfer image, docker-compose, and .env to server
         run: |
           scp -P ${{ secrets.SSH_PORT }} cms-api.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/
           scp -P ${{ secrets.SSH_PORT }} docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/docker-compose.yml
+          scp -P ${{ secrets.SSH_PORT }} .env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/.env
 
       - name: Load image and deploy on server
         run: |
@@ -112,5 +160,5 @@ jobs:
       - name: Cleanup runner
         if: always()
         run: |
-          rm -f cms-api.tar.gz
+          rm -f cms-api.tar.gz .env
           docker image prune -f || true
