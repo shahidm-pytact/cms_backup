@@ -121,13 +121,17 @@ jobs:
           docker images cms-api:latest --format "{{.Repository}}:{{.Tag}}" | grep -q "cms-api:latest" || (echo "ERROR: Image not loaded" && exit 1)
           rm -f cms-api.tar.gz
 
+          echo "[deploy] Stopping and removing existing api container so new image is used..."
+          docker compose stop api || true
+          docker compose rm -f api || true
+
           echo "[deploy] Starting db..."
           docker compose pull db || true
           docker compose up -d db
           echo "[deploy] Running migrations..."
           docker compose run --rm migrate
-          echo "[deploy] Starting all services (api) with latest .env..."
-          docker compose up -d --force-recreate api
+          echo "[deploy] Starting api with latest .env..."
+          docker compose up -d api
           echo "[deploy] Containers after up -d:"
           docker compose ps -a
           echo "[deploy] API container logs (last 40 lines):"
