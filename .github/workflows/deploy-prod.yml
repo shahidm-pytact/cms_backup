@@ -72,6 +72,8 @@ jobs:
           rm -f cms-api.tar.gz
 
           docker compose pull db || true
+          docker compose up -d db
+          docker compose run --rm migrate
           docker compose up -d
 
           docker image prune -f
