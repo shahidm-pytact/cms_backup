@@ -64,5 +64,13 @@ The deploy workflow uses blue-green: new API runs on alternate port (8000 or 800
 - **Nginx:** `/etc/nginx/conf.d/cms-backend.conf` must `include` the app’s proxy snippet, e.g.  
   `include /opt/apps/cms-blogs-management/backend/nginx-proxy.conf;`  
   The workflow overwrites `nginx-proxy.conf` with `proxy_pass http://127.0.0.1:8000;` or `8001` and runs `sudo nginx -s reload`.
-- **State:** `.live-port` in the backend dir stores the current live port (8000 or 8001).
+- **State:** `.live-port` in the backend dir stores the current live port (8000 or 8001). It only updates when a deploy **completes successfully**; until then it stays 8000 (or missing), so the next deploy always starts the new container on 8001.
 - **Network:** The new API container joins `backend_cms_network` so it can reach the `db` service. If your compose project name differs, fix the `--network` in the workflow.
+
+### Changing .env on the server
+
+The container reads `.env` only when it **starts**. If you edit `.env` on the server:
+
+- **Option A:** Restart the API so it re-reads `.env`:  
+  `docker restart cms-api`
+- **Option B:** Redeploy (push to prod). The new container will be started with the current `.env`.

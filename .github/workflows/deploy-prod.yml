@@ -83,12 +83,13 @@ jobs:
           docker compose up -d db
           docker compose run --rm migrate
 
-          # Blue-green: which port is live, which is for the new container
+          # Blue-green: which port is live, which is for the new container (.live-port only updated on successful deploy)
           LIVE_FILE=".live-port"
           LIVE_PORT=8000
-          [ -f "$LIVE_FILE" ] && LIVE_PORT=$(cat "$LIVE_FILE") || true
+          [ -f "$LIVE_FILE" ] && LIVE_PORT=$(cat "$LIVE_FILE" | tr -d '[:space:]') || true
+          [ "$LIVE_PORT" != "8001" ] && LIVE_PORT=8000 || true
           if [ "$LIVE_PORT" = "8000" ]; then NEXT_PORT=8001; else NEXT_PORT=8000; fi
-          echo "Current live port: $LIVE_PORT, starting new API container on: $NEXT_PORT"
+          echo "Live port (from .live-port): $LIVE_PORT, new container will use port: $NEXT_PORT"
 
           docker run -d \
             --name cms-api-new \
