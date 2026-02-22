@@ -1,11 +1,9 @@
 # =============================================================================
-# CMS Backend – Production Deploy (blue-green, zero downtime)
+# CMS Backend – Production Deploy (simple)
 # =============================================================================
 # Runner: self-hosted. Deploy target: backend server via SSH.
 # Server path: /opt/apps/cms-blogs-management/backend (.env must exist there).
-# Flow: build → transfer → load image → migrate → blue-green API (new container on
-#       alternate port 8000/8001, health check, switch nginx, then replace old).
-# Nginx: main config must include backend/nginx-proxy.conf for proxy_pass (see docs).
+# Flow: build → transfer → load image → migrate → docker compose up -d.
 # Trigger: push/merge to prod or workflow_dispatch.
 # =============================================================================
 
@@ -62,17 +60,12 @@ jobs:
           scp -P ${{ secrets.SSH_PORT }} cms-api.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/
           scp -P ${{ secrets.SSH_PORT }} docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/docker-compose.yml
 
-      # Blue-green: new API container on alternate port, switch nginx, then replace old (zero downtime).
-      - name: Load image and deploy on server (blue-green)
+      - name: Load image and deploy on server
         run: |
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash << 'EOFDEPLOY'
           set -e
           DEPLOY_DIR="/opt/apps/cms-blogs-management/backend"
           cd "$DEPLOY_DIR" || { echo "ERROR: $DEPLOY_DIR not found on server"; exit 1; }
-
-          docker stop cms-api-new 2>/dev/null || true
-          docker rm cms-api-new 2>/dev/null || true
-          docker image prune -f
 
           gunzip -t cms-api.tar.gz || (echo "ERROR: gzip integrity test failed" && exit 1)
           gunzip -c cms-api.tar.gz | docker load || (echo "ERROR: Failed to load Docker image" && exit 1)
@@ -82,82 +75,10 @@ jobs:
           docker compose pull db || true
           docker compose up -d db
           docker compose run --rm migrate
+          docker compose up -d
 
-          # Blue-green: which port is live, which is for the new container (.live-port only updated on successful deploy)
-          LIVE_FILE=".live-port"
-          LIVE_PORT=8000
-          [ -f "$LIVE_FILE" ] && LIVE_PORT=$(cat "$LIVE_FILE" | tr -d '[:space:]') || true
-          [ "$LIVE_PORT" != "8001" ] && LIVE_PORT=8000 || true
-          if [ "$LIVE_PORT" = "8000" ]; then NEXT_PORT=8001; else NEXT_PORT=8000; fi
-          echo "Live port (from .live-port): $LIVE_PORT, new container will use port: $NEXT_PORT"
-
-          docker run -d \
-            --name cms-api-new \
-            --restart unless-stopped \
-            -p ${NEXT_PORT}:8000 \
-            --env-file .env \
-            --network backend_cms_network \
-            cms-api:latest
-
-          echo "Waiting for new container health check..."
-          for i in $(seq 1 20); do
-            if curl -sf --max-time 5 http://127.0.0.1:${NEXT_PORT}/health >/dev/null 2>&1; then
-              echo "Health check passed"
-              break
-            fi
-            if [ "$i" -eq 20 ]; then
-              echo "ERROR: New container health check failed"
-              docker logs cms-api-new 2>&1 || true
-              docker rm -f cms-api-new 2>/dev/null || true
-              exit 1
-            fi
-            sleep 3
-          done
-
-          echo "Switching traffic to new container..."
-          {
-            echo "proxy_pass http://127.0.0.1:${NEXT_PORT};"
-            echo "proxy_http_version 1.1;"
-            echo "proxy_set_header Host \$host;"
-            echo "proxy_set_header X-Real-IP \$remote_addr;"
-            echo "proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;"
-            echo "proxy_set_header X-Forwarded-Proto \$scheme;"
-          } > nginx-proxy.conf
-          if ! sudo nginx -t; then
-            echo "ERROR: Nginx config test failed"
-            docker rm -f cms-api-new 2>/dev/null || true
-            exit 1
-          fi
-          if ! sudo nginx -s reload; then
-            echo "ERROR: Nginx reload failed"
-            docker rm -f cms-api-new 2>/dev/null || true
-            exit 1
-          fi
-          echo "Traffic switched to port $NEXT_PORT"
-
-          sleep 2
-          if ! curl -sf --max-time 10 http://127.0.0.1:${NEXT_PORT}/health >/dev/null 2>&1; then
-            echo "ERROR: Post-switch verify failed - rolling back"
-            {
-              echo "proxy_pass http://127.0.0.1:${LIVE_PORT};"
-              echo "proxy_http_version 1.1;"
-              echo "proxy_set_header Host \$host;"
-              echo "proxy_set_header X-Real-IP \$remote_addr;"
-              echo "proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;"
-              echo "proxy_set_header X-Forwarded-Proto \$scheme;"
-            } > nginx-proxy.conf
-            sudo nginx -s reload
-            docker rm -f cms-api-new 2>/dev/null || true
-            echo "Rollback complete - traffic back on port $LIVE_PORT"
-            exit 1
-          fi
-
-          docker stop cms-api 2>/dev/null || true
-          docker rm cms-api 2>/dev/null || true
-          docker rename cms-api-new cms-api
-          echo "$NEXT_PORT" > "$LIVE_FILE"
           docker image prune -f
-          echo "Blue-green deployment completed successfully"
+          echo "Deploy completed"
           EOFDEPLOY
 
       - name: Show migrate logs on failure
@@ -169,20 +90,10 @@ jobs:
       - name: Verify deployment
         if: success()
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash << 'EOFVERIFY'
-          sleep 5
-          docker ps | grep -E 'cms-api|cms-db' || true
-          LIVE_PORT=$(cat /opt/apps/cms-blogs-management/backend/.live-port 2>/dev/null || echo "8000")
-          echo "Live port: $LIVE_PORT"
-          if curl -sf --max-time 10 http://127.0.0.1:${LIVE_PORT}/health; then
-            echo " API healthy"
-          else
-            echo " WARNING: API not responding on port $LIVE_PORT"
-          fi
-          grep proxy_pass /opt/apps/cms-blogs-management/backend/nginx-proxy.conf 2>/dev/null || true
-          EOFVERIFY
+          sleep 10
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /opt/apps/cms-blogs-management/backend && docker compose ps"
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "curl -sf --max-time 10 http://127.0.0.1:8000/health && echo ' API healthy' || echo ' WARNING: API not responding'" || true
 
-      # Do not remove cms-api:latest when runner is the same as server (self-hosted on deploy target).
       - name: Cleanup runner
         if: always()
         run: |
