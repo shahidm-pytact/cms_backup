@@ -44,14 +44,12 @@ jobs:
       - name: Build Docker image
         run: |
           export DOCKER_BUILDKIT=1
-          cd backend
           docker build -t cms-api:latest .
           docker images cms-api:latest --format "{{.Repository}}:{{.Tag}}" | grep -q "cms-api:latest" || \
             (echo "ERROR: Docker image was not built successfully" && exit 1)
 
       - name: Save Docker image
         run: |
-          cd backend
           docker save cms-api:latest | gzip > cms-api.tar.gz
           [ -f cms-api.tar.gz ] || (echo "ERROR: cms-api.tar.gz was not created" && exit 1)
           FILE_SIZE=$(stat -c%s cms-api.tar.gz 2>/dev/null || stat -f%z cms-api.tar.gz 2>/dev/null || echo "0")
@@ -59,8 +57,8 @@ jobs:
 
       - name: Transfer image and docker-compose to server
         run: |
-          scp -P ${{ secrets.SSH_PORT }} backend/cms-api.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/
-          scp -P ${{ secrets.SSH_PORT }} backend/docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/docker-compose.yml
+          scp -P ${{ secrets.SSH_PORT }} cms-api.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/
+          scp -P ${{ secrets.SSH_PORT }} docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/docker-compose.yml
 
       - name: Load image and deploy on server
         run: |
@@ -98,6 +96,6 @@ jobs:
       - name: Cleanup runner
         if: always()
         run: |
-          rm -f backend/cms-api.tar.gz
+          rm -f cms-api.tar.gz
           docker rmi cms-api:latest 2>/dev/null || true
           docker image prune -f || true
