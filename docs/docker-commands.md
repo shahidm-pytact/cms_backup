@@ -54,3 +54,15 @@ docker compose up -d
 4. **Stop everything:**  
    `docker compose down`  
    (Avoid `down -v` — that deletes DB data.)
+
+---
+
+## Blue-green (production)
+
+The deploy workflow uses blue-green: new API runs on alternate port (8000 or 8001), health check, then Nginx is switched. On the server:
+
+- **Nginx:** `/etc/nginx/conf.d/cms-backend.conf` must `include` the app’s proxy snippet, e.g.  
+  `include /opt/apps/cms-blogs-management/backend/nginx-proxy.conf;`  
+  The workflow overwrites `nginx-proxy.conf` with `proxy_pass http://127.0.0.1:8000;` or `8001` and runs `sudo nginx -s reload`.
+- **State:** `.live-port` in the backend dir stores the current live port (8000 or 8001).
+- **Network:** The new API container joins `backend_cms_network` so it can reach the `db` service. If your compose project name differs, fix the `--network` in the workflow.
