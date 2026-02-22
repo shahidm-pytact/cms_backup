@@ -2,7 +2,7 @@
 # CMS Backend – Production Deploy (Blue-Green, Zero Downtime)
 # =============================================================================
 # Runner: self-hosted. Deploy target: backend server via SSH.
-# Server path: /opt/apps/cms-backend/ (must have .env and optional nginx config).
+# Server path: /opt/apps/cms-blogs-management/backend (must have .env and optional nginx config).
 # Flow: build → transfer → load → migrate → start new API on alternate port
 #       → health check → switch nginx → verify → stop old, rename new.
 # Trigger: push/merge to prod or workflow_dispatch.
@@ -40,7 +40,7 @@ jobs:
 
       - name: Ensure deploy directory exists on server
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /opt/apps/cms-backend"
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /opt/apps/cms-blogs-management/backend"
 
       - name: Build Docker image
         run: |
@@ -58,14 +58,14 @@ jobs:
 
       - name: Transfer image and docker-compose to server
         run: |
-          scp -P ${{ secrets.SSH_PORT }} cms-api.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-backend/
-          scp -P ${{ secrets.SSH_PORT }} docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-backend/
+          scp -P ${{ secrets.SSH_PORT }} cms-api.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/
+          scp -P ${{ secrets.SSH_PORT }} docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/
 
       - name: Load image, migrate, and deploy on server (blue-green)
         run: |
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash << 'EOFDEPLOY'
           set -e
-          DEPLOY_DIR="/opt/apps/cms-backend"
+          DEPLOY_DIR="/opt/apps/cms-blogs-management/backend"
           cd "$DEPLOY_DIR" || { echo "ERROR: $DEPLOY_DIR not found"; exit 1; }
 
           echo "Freeing space (keep live container)..."
@@ -177,16 +177,16 @@ jobs:
         if: failure()
         run: |
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd /opt/apps/cms-backend && docker compose logs migrate 2>/dev/null" || true
+            "cd /opt/apps/cms-blogs-management/backend && docker compose logs migrate 2>/dev/null" || true
 
       - name: Verify deployment
         if: success()
         run: |
           sleep 5
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd /opt/apps/cms-backend && docker compose ps; docker ps --filter name=cms-api --format 'table {{.Names}}\t{{.Status}}'"
+            "cd /opt/apps/cms-blogs-management/backend && docker compose ps; docker ps --filter name=cms-api --format 'table {{.Names}}\t{{.Status}}'"
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "LIVE_PORT=\$(cat /opt/apps/cms-backend/.live-port 2>/dev/null || echo 8000); curl -sf --max-time 10 http://127.0.0.1:\${LIVE_PORT}/health && echo ' API healthy' || echo ' WARNING: API not responding'"
+            "LIVE_PORT=\$(cat /opt/apps/cms-blogs-management/backend/.live-port 2>/dev/null || echo 8000); curl -sf --max-time 10 http://127.0.0.1:\${LIVE_PORT}/health && echo ' API healthy' || echo ' WARNING: API not responding'"
 
       - name: Cleanup runner
         if: always()
