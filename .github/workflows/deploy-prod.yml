@@ -126,8 +126,8 @@ jobs:
           docker compose up -d db
           echo "[deploy] Running migrations..."
           docker compose run --rm migrate
-          echo "[deploy] Starting all services (api)..."
-          docker compose up -d
+          echo "[deploy] Starting all services (api) with latest .env..."
+          docker compose up -d --force-recreate api
           echo "[deploy] Containers after up -d:"
           docker compose ps -a
           echo "[deploy] API container logs (last 40 lines):"
