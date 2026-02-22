@@ -102,64 +102,72 @@ jobs:
           FILE_SIZE=$(stat -c%s cms-api.tar.gz 2>/dev/null || stat -f%z cms-api.tar.gz 2>/dev/null || echo "0")
           [ "$FILE_SIZE" -ge 100000 ] || (echo "ERROR: cms-api.tar.gz too small ($FILE_SIZE bytes)" && exit 1)
 
-      - name: Transfer image, docker-compose, and .env to server
+      - name: Copy files to deploy directory
         run: |
-          scp -P ${{ secrets.SSH_PORT }} cms-api.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/
-          scp -P ${{ secrets.SSH_PORT }} docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/docker-compose.yml
-          scp -P ${{ secrets.SSH_PORT }} .env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/.env
+          DEPLOY_DIR="/opt/apps/cms-blogs-management/backend"
+          mkdir -p "$DEPLOY_DIR"
+          cp cms-api.tar.gz "$DEPLOY_DIR/cms-api.tar.gz"
+          cp docker-compose.yml "$DEPLOY_DIR/docker-compose.yml"
+          cp .env "$DEPLOY_DIR/.env"
+          echo "Files copied to $DEPLOY_DIR"
 
-      - name: Load image and deploy on server
+      - name: Deploy on server (direct - runner is the server)
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash << 'EOFDEPLOY'
           set -e
           DEPLOY_DIR="/opt/apps/cms-blogs-management/backend"
-          cd "$DEPLOY_DIR" || { echo "ERROR: $DEPLOY_DIR not found on server"; exit 1; }
+          cd "$DEPLOY_DIR"
 
           echo "[deploy] Loading image..."
           gunzip -t cms-api.tar.gz || (echo "ERROR: gzip integrity test failed" && exit 1)
           gunzip -c cms-api.tar.gz | docker load || (echo "ERROR: Failed to load Docker image" && exit 1)
           docker images cms-api:latest --format "{{.Repository}}:{{.Tag}}" | grep -q "cms-api:latest" || (echo "ERROR: Image not loaded" && exit 1)
           rm -f cms-api.tar.gz
+          echo "[deploy] Image loaded."
 
-          echo "[deploy] Stopping and removing existing api container so new image is used..."
+          echo "[deploy] Stopping and removing existing api container..."
           docker compose stop api || true
           docker compose rm -f api || true
+          echo "[deploy] api container removed."
 
           echo "[deploy] Starting db..."
           docker compose pull db || true
           docker compose up -d db
+          echo "[deploy] db started."
+
           echo "[deploy] Running migrations..."
           docker compose run --rm migrate
+          echo "[deploy] Migrations done."
+
           echo "[deploy] Starting api with latest .env..."
           docker compose up -d api
-          echo "[deploy] Containers after up -d:"
+          echo "[deploy] api started."
+
+          echo "[deploy] Containers:"
           docker compose ps -a
-          echo "[deploy] API container logs (last 40 lines):"
+          echo "[deploy] API logs (last 40 lines):"
           docker compose logs api --tail 40 || true
-          echo "[deploy] Port 8000 listener:"
+          echo "[deploy] Port 8000:"
           ss -tlnp | grep 8000 || true
 
           docker image prune -f
-          echo "Deploy completed"
-          EOFDEPLOY
+          echo "Deploy completed."
 
       - name: Show migrate logs on failure
         if: failure()
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd /opt/apps/cms-blogs-management/backend && docker compose logs migrate" || true
+          cd /opt/apps/cms-blogs-management/backend && docker compose logs migrate || true
 
       - name: Verify deployment
         if: success()
         run: |
-          sleep 20
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /opt/apps/cms-blogs-management/backend && docker compose ps -a"
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "curl -sf --max-time 10 http://127.0.0.1:8000/health && echo ' API healthy' || echo ' WARNING: API not responding'" || true
+          sleep 10
+          cd /opt/apps/cms-blogs-management/backend && docker compose ps -a
+          curl -sf --max-time 10 http://127.0.0.1:8000/health && echo " API healthy" || echo " WARNING: API not responding"
 
       - name: Show API logs if not healthy
         if: success()
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /opt/apps/cms-blogs-management/backend && docker compose logs api --tail 80" || true
+          cd /opt/apps/cms-blogs-management/backend && docker compose logs api --tail 80 || true
 
       - name: Cleanup runner
         if: always()
