@@ -1,10 +1,9 @@
 # =============================================================================
-# CMS Backend – Production Deploy (Blue-Green, Zero Downtime)
+# CMS Backend – Production Deploy (simple, no blue-green)
 # =============================================================================
 # Runner: self-hosted. Deploy target: backend server via SSH.
-# Server path: /opt/apps/cms-blogs-management/backend (must have .env and optional nginx config).
-# Flow: build → transfer → load → migrate → start new API on alternate port
-#       → health check → switch nginx → verify → stop old, rename new.
+# Server path: /opt/apps/cms-blogs-management/backend (.env must exist there).
+# Flow: build on runner → transfer image + docker-compose.yml → load image → compose up -d.
 # Trigger: push/merge to prod or workflow_dispatch.
 # =============================================================================
 
@@ -45,12 +44,14 @@ jobs:
       - name: Build Docker image
         run: |
           export DOCKER_BUILDKIT=1
+          cd backend
           docker build -t cms-api:latest .
           docker images cms-api:latest --format "{{.Repository}}:{{.Tag}}" | grep -q "cms-api:latest" || \
             (echo "ERROR: Docker image was not built successfully" && exit 1)
 
       - name: Save Docker image
         run: |
+          cd backend
           docker save cms-api:latest | gzip > cms-api.tar.gz
           [ -f cms-api.tar.gz ] || (echo "ERROR: cms-api.tar.gz was not created" && exit 1)
           FILE_SIZE=$(stat -c%s cms-api.tar.gz 2>/dev/null || stat -f%z cms-api.tar.gz 2>/dev/null || echo "0")
@@ -58,141 +59,45 @@ jobs:
 
       - name: Transfer image and docker-compose to server
         run: |
-          scp -P ${{ secrets.SSH_PORT }} cms-api.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/
-          scp -P ${{ secrets.SSH_PORT }} docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/
+          scp -P ${{ secrets.SSH_PORT }} backend/cms-api.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/
+          scp -P ${{ secrets.SSH_PORT }} backend/docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/apps/cms-blogs-management/backend/docker-compose.yml
 
-      - name: Load image, migrate, and deploy on server (blue-green)
+      - name: Load image and deploy on server
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash << 'EOFDEPLOY'
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash -s << 'EOFDEPLOY'
           set -e
           DEPLOY_DIR="/opt/apps/cms-blogs-management/backend"
-          cd "$DEPLOY_DIR" || { echo "ERROR: $DEPLOY_DIR not found"; exit 1; }
+          cd "$DEPLOY_DIR" || { echo "ERROR: $DEPLOY_DIR not found on server"; exit 1; }
 
-          echo "Freeing space (keep live container)..."
-          docker stop cms-api-new 2>/dev/null || true
-          docker rm cms-api-new 2>/dev/null || true
-          docker image prune -f
-          docker builder prune -f || true
-
-          echo "Checking transferred file..."
-          if [ ! -f cms-api.tar.gz ]; then echo "ERROR: cms-api.tar.gz not found"; exit 1; fi
-          FILE_SIZE=$(stat -f%z cms-api.tar.gz 2>/dev/null || stat -c%s cms-api.tar.gz 2>/dev/null || echo "0")
-          if [ "$FILE_SIZE" -lt 100000 ]; then echo "ERROR: cms-api.tar.gz too small ($FILE_SIZE bytes)"; exit 1; fi
-          gunzip -t cms-api.tar.gz || { echo "ERROR: gzip integrity test failed"; exit 1; }
-
-          echo "Loading Docker image..."
-          gunzip -c cms-api.tar.gz | docker load || { echo "ERROR: Failed to load Docker image"; exit 1; }
-          docker images cms-api:latest --format "{{.Repository}}:{{.Tag}}" | grep -q "cms-api:latest" || \
-            { echo "ERROR: Image was not loaded"; exit 1; }
-
-          echo "Ensuring DB is up..."
-          docker compose up -d db
-          for i in 1 2 3 4 5 6 7 8 9 10; do
-            if docker compose exec -T db pg_isready -U postgres 2>/dev/null; then break; fi
-            if [ "$i" -eq 10 ]; then echo "ERROR: DB not ready"; exit 1; fi
-            sleep 2
-          done
-
-          NETWORK=$(docker compose ps -q db | xargs docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null | head -1)
-          if [ -z "$NETWORK" ]; then echo "ERROR: Could not get DB network name"; exit 1; fi
-          echo "Using network: $NETWORK"
-          echo "Running migrations..."
-          docker run --rm --env-file .env --network "$NETWORK" cms-api:latest alembic upgrade head || \
-            { echo "ERROR: Migrations failed"; exit 1; }
-
-          LIVE_FILE=".live-port"
-          LIVE_PORT=8000
-          [ -f "$LIVE_FILE" ] && LIVE_PORT=$(cat "$LIVE_FILE") || true
-          if [ "$LIVE_PORT" = "8000" ]; then NEXT_PORT=8001; else NEXT_PORT=8000; fi
-          echo "Current live port: $LIVE_PORT, starting new API on: $NEXT_PORT"
-
-          docker run -d \
-            --name cms-api-new \
-            --restart unless-stopped \
-            -p ${NEXT_PORT}:8000 \
-            --env-file .env \
-            --network "$NETWORK" \
-            cms-api:latest
-
-          echo "Waiting for new container health..."
-          for i in 1 2 3 4 5 6 7 8 9 10; do
-            if curl -sf --max-time 5 "http://127.0.0.1:${NEXT_PORT}/health" >/dev/null 2>&1; then
-              echo "Health check passed"
-              break
-            fi
-            if [ "$i" -eq 10 ]; then
-              echo "ERROR: New container health check failed"
-              docker logs cms-api-new 2>&1 || true
-              docker rm -f cms-api-new 2>/dev/null || true
-              exit 1
-            fi
-            sleep 3
-          done
-
-          echo "Switching traffic to new container..."
-          {
-            echo "include /etc/nginx/snippets/proxy-headers.conf;"
-            echo "proxy_pass http://127.0.0.1:${NEXT_PORT};"
-            echo "proxy_http_version 1.1;"
-            echo "proxy_set_header Host \$host;"
-            echo "proxy_set_header X-Real-IP \$remote_addr;"
-            echo "proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;"
-            echo "proxy_set_header X-Forwarded-Proto \$scheme;"
-            echo "proxy_cache_bypass \$http_upgrade;"
-          } > nginx-proxy.conf 2>/dev/null || true
-
-          if command -v sudo >/dev/null 2>&1 && sudo nginx -t 2>/dev/null; then
-            sudo nginx -s reload || { echo "ERROR: Nginx reload failed"; docker rm -f cms-api-new 2>/dev/null || true; exit 1; }
-          else
-            echo "WARNING: Nginx not configured or sudo nginx -t failed; skipping reload (traffic switch manual or not used)"
-          fi
-
-          sleep 2
-          if ! curl -sf --max-time 10 "http://127.0.0.1:${NEXT_PORT}/health" >/dev/null 2>&1; then
-            echo "ERROR: Post-switch verify failed - rolling back"
-            if [ -f nginx-proxy.conf ]; then
-              {
-                echo "include /etc/nginx/snippets/proxy-headers.conf;"
-                echo "proxy_pass http://127.0.0.1:${LIVE_PORT};"
-                echo "proxy_http_version 1.1;"
-                echo "proxy_set_header Host \$host;"
-                echo "proxy_cache_bypass \$http_upgrade;"
-              } > nginx-proxy.conf
-              sudo nginx -s reload 2>/dev/null || true
-            fi
-            docker rm -f cms-api-new 2>/dev/null || true
-            echo "Rollback complete - traffic back on port $LIVE_PORT"
-            exit 1
-          fi
-
-          docker stop cms-api 2>/dev/null || true
-          docker rm cms-api 2>/dev/null || true
-          docker rename cms-api-new cms-api
-          echo "$NEXT_PORT" > "$LIVE_FILE"
-
+          gunzip -t cms-api.tar.gz || (echo "ERROR: gzip integrity test failed" && exit 1)
+          gunzip -c cms-api.tar.gz | docker load || (echo "ERROR: Failed to load Docker image" && exit 1)
           rm -f cms-api.tar.gz
+
+          docker compose pull db || true
+          docker compose up -d
+
           docker image prune -f
-          echo "Blue-green deployment completed successfully"
+          echo "Deploy completed"
           EOFDEPLOY
 
       - name: Show migrate logs on failure
         if: failure()
         run: |
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd /opt/apps/cms-blogs-management/backend && docker compose logs migrate 2>/dev/null" || true
+            "cd /opt/apps/cms-blogs-management/backend && docker compose logs migrate" || true
 
       - name: Verify deployment
         if: success()
         run: |
-          sleep 5
+          sleep 10
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd /opt/apps/cms-blogs-management/backend && docker compose ps; docker ps --filter name=cms-api --format 'table {{.Names}}\t{{.Status}}'"
+            "cd /opt/apps/cms-blogs-management/backend && docker compose ps"
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "LIVE_PORT=\$(cat /opt/apps/cms-blogs-management/backend/.live-port 2>/dev/null || echo 8000); curl -sf --max-time 10 http://127.0.0.1:\${LIVE_PORT}/health && echo ' API healthy' || echo ' WARNING: API not responding'"
+            "curl -sf --max-time 10 http://127.0.0.1:8000/health && echo ' API healthy' || echo ' WARNING: API not responding'" || true
 
       - name: Cleanup runner
         if: always()
         run: |
-          rm -f cms-api.tar.gz
+          rm -f backend/cms-api.tar.gz
           docker rmi cms-api:latest 2>/dev/null || true
           docker image prune -f || true

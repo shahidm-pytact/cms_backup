@@ -1,4 +1,8 @@
-# Uses .env in project root. Never run: docker compose down -v (removes volumes and deletes DB data).
+# Uses .env in project root. Works locally and on server (image cms-api:latest).
+# Local: run `docker build -t cms-api:latest .` first, then `docker compose up`.
+# Server: workflow transfers image tar and this file; no build on server.
+# Never run: docker compose down -v (removes volumes and deletes DB data).
+
 services:
   db:
     image: postgres:15-alpine
@@ -24,17 +28,14 @@ services:
       - cms_network
 
   migrate:
-    build: .
     image: cms-api:latest
     container_name: ${MIGRATE_CONTAINER_NAME:-cms-migrate}
-    entrypoint: []  # Override Dockerfile entrypoint
+    entrypoint: []
     command: alembic upgrade head
     env_file:
       - .env
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://postgres:1112@db:5432/cms}
-    volumes:
-      - .:/app
     depends_on:
       db:
         condition: service_healthy
@@ -43,18 +44,15 @@ services:
       - cms_network
 
   api:
-    build: .
     image: cms-api:latest
     container_name: ${API_CONTAINER_NAME:-cms-api}
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
     ports:
       - "${API_PORT:-8000}:8000"
     env_file:
       - .env
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://postgres:1112@db:5432/cms}
-    volumes:
-      - .:/app
     depends_on:
       db:
         condition: service_healthy
@@ -64,10 +62,6 @@ services:
     networks:
       - cms_network
 
-# WARNING: Database data is stored in named volumes (postgres_data)
-# These volumes persist data across container restarts and removals.
-# To prevent accidental data loss, NEVER use: docker-compose down -v
-# The -v flag removes volumes and will DELETE ALL DATABASE DATA!
 volumes:
   postgres_data:
 
