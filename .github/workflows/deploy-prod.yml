@@ -90,9 +90,14 @@ jobs:
       - name: Verify deployment
         if: success()
         run: |
-          sleep 10
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /opt/apps/cms-blogs-management/backend && docker compose ps"
+          sleep 20
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /opt/apps/cms-blogs-management/backend && docker compose ps -a"
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "curl -sf --max-time 10 http://127.0.0.1:8000/health && echo ' API healthy' || echo ' WARNING: API not responding'" || true
+
+      - name: Show API logs if not healthy
+        if: success()
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /opt/apps/cms-blogs-management/backend && docker compose logs api --tail 80" || true
 
       - name: Cleanup runner
         if: always()
