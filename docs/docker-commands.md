@@ -57,20 +57,26 @@ docker compose up -d
 
 ---
 
-## Blue-green (production)
+## Blue-green (zero-downtime production)
 
-The deploy workflow uses blue-green: new API runs on alternate port (8000 or 8001), health check, then Nginx is switched. On the server:
+The deploy workflow uses blue-green: two slots (api-blue on 8000, api-green on 8001). Only one is “live” at a time; Nginx proxies to the live port.
 
-- **Nginx:** `/etc/nginx/conf.d/cms-backend.conf` must `include` the app’s proxy snippet, e.g.  
-  `include /opt/apps/cms-blogs-management/backend/nginx-proxy.conf;`  
-  The workflow overwrites `nginx-proxy.conf` with `proxy_pass http://127.0.0.1:8000;` or `8001` and runs `sudo nginx -s reload`.
-- **State:** `.live-port` in the backend dir stores the current live port (8000 or 8001). It only updates when a deploy **completes successfully**; until then it stays 8000 (or missing), so the next deploy always starts the new container on 8001.
-- **Network:** The new API container joins `backend_cms_network` so it can reach the `db` service. If your compose project name differs, fix the `--network` in the workflow.
+1. **Deploy flow:** New image is loaded, migrations run, then the **inactive** slot is started (e.g. api-green on 8001). After the new API passes health checks, the workflow writes `nginx-proxy.conf` with the new port and runs `sudo nginx -s reload`, then stops the old slot.
+2. **State:** `.live-port` in the backend dir stores the current live port (8000 or 8001). Each deploy toggles (8000 → 8001 → 8000 → …).
+3. **Nginx (required on server):**  
+   - Create `/opt/apps/cms-blogs-management/backend/nginx-proxy.conf` (or copy from `nginx-proxy.conf.example`).  
+   - In your server block (e.g. `/etc/nginx/conf.d/cms-backend.conf`), include it:
+     ```nginx
+     location / {
+       include /opt/apps/cms-blogs-management/backend/nginx-proxy.conf;
+     }
+     ```
+   - The workflow overwrites `nginx-proxy.conf` with `proxy_pass http://127.0.0.1:8000;` or `8001` and runs `sudo nginx -s reload`. The deploy user (SSH_USER) must have passwordless `sudo nginx -s reload` or `sudo systemctl reload nginx`.
 
 ### Changing .env on the server
 
 The container reads `.env` only when it **starts**. If you edit `.env` on the server:
 
-- **Option A:** Restart the API so it re-reads `.env`:  
-  `docker restart cms-api`
-- **Option B:** Redeploy (push to prod). The new container will be started with the current `.env`.
+- **Option A:** Restart the live API container:  
+  `docker restart cms-api-blue` or `docker restart cms-api-green` (whichever is running).
+- **Option B:** Redeploy (push to prod). The new slot will start with the current `.env`.

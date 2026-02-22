@@ -104,12 +104,24 @@ jobs:
 
       - name: Transfer image, docker-compose, .env and deploy script to server
         run: |
-          # Write deploy script to a file (avoids SSH heredoc session-drop issue)
+          # Write deploy script (blue-green for zero-downtime)
           cat > deploy.sh << 'SCRIPTEOF'
           #!/usr/bin/env bash
           set -e
           DEPLOY_DIR="/opt/apps/cms-blogs-management/backend"
+          LIVE_PORT_FILE="$DEPLOY_DIR/.live-port"
+          NGINX_PROXY_CONF="$DEPLOY_DIR/nginx-proxy.conf"
           cd "$DEPLOY_DIR"
+
+          if [ ! -f "$NGINX_PROXY_CONF" ]; then
+            echo "[deploy] Creating initial nginx-proxy.conf (port 8000)..."
+            echo "proxy_pass http://127.0.0.1:8000;" > "$NGINX_PROXY_CONF"
+            echo "proxy_http_version 1.1;" >> "$NGINX_PROXY_CONF"
+            echo 'proxy_set_header Host $host;' >> "$NGINX_PROXY_CONF"
+            echo 'proxy_set_header X-Real-IP $remote_addr;' >> "$NGINX_PROXY_CONF"
+            echo 'proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' >> "$NGINX_PROXY_CONF"
+            echo 'proxy_set_header X-Forwarded-Proto $scheme;' >> "$NGINX_PROXY_CONF"
+          fi
 
           echo "[deploy] Loading image..."
           gunzip -t cms-api.tar.gz || (echo "ERROR: gzip integrity test failed" && exit 1)
@@ -118,10 +130,9 @@ jobs:
           rm -f cms-api.tar.gz
           echo "[deploy] Image loaded."
 
-          echo "[deploy] Stopping and removing existing api container..."
-          docker compose stop api || true
-          docker compose rm -f api || true
-          echo "[deploy] api container removed."
+          echo "[deploy] Stopping any legacy api container..."
+          docker compose stop api 2>/dev/null || true
+          docker compose rm -f api 2>/dev/null || true
 
           echo "[deploy] Starting db..."
           docker compose pull db || true
@@ -132,19 +143,59 @@ jobs:
           docker compose run --rm migrate
           echo "[deploy] Migrations done."
 
-          echo "[deploy] Starting api with latest .env..."
-          docker compose up -d api
-          echo "[deploy] api started."
+          LIVE_PORT=8000
+          [ -f "$LIVE_PORT_FILE" ] && LIVE_PORT=$(cat "$LIVE_PORT_FILE" | tr -d '\n' || true)
+          [ "$LIVE_PORT" != "8001" ] && LIVE_PORT=8000
+
+          if [ "$LIVE_PORT" = "8000" ]; then
+            INACTIVE_PORT=8001
+            INACTIVE_SLOT="api-green"
+            OLD_SLOT="api-blue"
+          else
+            INACTIVE_PORT=8000
+            INACTIVE_SLOT="api-blue"
+            OLD_SLOT="api-green"
+          fi
+
+          echo "[deploy] Blue-green: live=$LIVE_PORT, starting $INACTIVE_SLOT on port $INACTIVE_PORT..."
+
+          docker compose up -d "$INACTIVE_SLOT"
+          echo "[deploy] Waiting for new API to be healthy (port $INACTIVE_PORT)..."
+          for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+            if curl -sf --max-time 3 "http://127.0.0.1:$INACTIVE_PORT/health" >/dev/null 2>&1; then
+              echo "[deploy] New API healthy."
+              break
+            fi
+            [ "$i" = "15" ] && { echo "ERROR: New API did not become healthy"; exit 1; }
+            sleep 2
+          done
+
+          echo "[deploy] Switching Nginx to port $INACTIVE_PORT..."
+          {
+            echo "proxy_pass http://127.0.0.1:$INACTIVE_PORT;"
+            echo "proxy_http_version 1.1;"
+            echo 'proxy_set_header Host $host;'
+            echo 'proxy_set_header X-Real-IP $remote_addr;'
+            echo 'proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;'
+            echo 'proxy_set_header X-Forwarded-Proto $scheme;'
+          } > "$NGINX_PROXY_CONF"
+          sudo nginx -s reload 2>/dev/null || sudo systemctl reload nginx 2>/dev/null || echo "WARNING: Could not reload nginx (check sudo)"
+          echo "$INACTIVE_PORT" > "$LIVE_PORT_FILE"
+          echo "[deploy] Live port set to $INACTIVE_PORT."
+
+          echo "[deploy] Stopping old slot $OLD_SLOT..."
+          docker compose stop "$OLD_SLOT" || true
+          docker compose rm -f "$OLD_SLOT" || true
 
           echo "[deploy] Containers:"
           docker compose ps -a
-          echo "[deploy] API logs (last 40 lines):"
-          docker compose logs api --tail 40 || true
-          echo "[deploy] Port 8000:"
-          ss -tlnp | grep 8000 || true
+          echo "[deploy] Live API logs (last 40 lines):"
+          docker compose logs "$INACTIVE_SLOT" --tail 40 || true
+          echo "[deploy] Ports 8000/8001:"
+          ss -tlnp | grep -E '8000|8001' || true
 
           docker image prune -f
-          echo "Deploy completed."
+          echo "Deploy completed (live port $INACTIVE_PORT)."
           SCRIPTEOF
 
           DEST="${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}"
@@ -169,17 +220,17 @@ jobs:
       - name: Verify deployment
         if: success()
         run: |
-          sleep 10
+          sleep 5
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
             "cd /opt/apps/cms-blogs-management/backend && docker compose ps -a"
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "curl -sf --max-time 10 http://127.0.0.1:8000/health && echo ' API healthy' || echo ' WARNING: API not responding'" || true
+            "LIVE=\$(cat /opt/apps/cms-blogs-management/backend/.live-port 2>/dev/null || echo 8000); curl -sf --max-time 10 http://127.0.0.1:\$LIVE/health && echo ' API healthy' || echo ' WARNING: API not responding'" || true
 
       - name: Show API logs if not healthy
         if: success()
         run: |
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd /opt/apps/cms-blogs-management/backend && docker compose logs api --tail 80" || true
+            "cd /opt/apps/cms-blogs-management/backend && (docker compose logs api-blue --tail 40 2>/dev/null; docker compose logs api-green --tail 40 2>/dev/null)" || true
 
       - name: Cleanup runner
         if: always()

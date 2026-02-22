@@ -43,12 +43,13 @@ services:
     networks:
       - cms_network
 
-  api:
+  # Blue-green: only one is "live" at a time; nginx proxies to .live-port (8000 or 8001)
+  api-blue:
     image: cms-api:latest
-    container_name: ${API_CONTAINER_NAME:-cms-api}
+    container_name: ${API_BLUE_CONTAINER_NAME:-cms-api-blue}
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "8000:8000"
     env_file:
       - .env
     environment:
@@ -56,9 +57,24 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
-    restart: unless-stopped
+    restart: "no"
+    networks:
+      - cms_network
+
+  api-green:
+    image: cms-api:latest
+    container_name: ${API_GREEN_CONTAINER_NAME:-cms-api-green}
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://postgres:1112@db:5432/cms}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
     networks:
       - cms_network
 
