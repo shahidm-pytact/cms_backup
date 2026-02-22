@@ -76,6 +76,7 @@ jobs:
 
           gunzip -t cms-api.tar.gz || (echo "ERROR: gzip integrity test failed" && exit 1)
           gunzip -c cms-api.tar.gz | docker load || (echo "ERROR: Failed to load Docker image" && exit 1)
+          docker images cms-api:latest --format "{{.Repository}}:{{.Tag}}" | grep -q "cms-api:latest" || (echo "ERROR: Image not loaded" && exit 1)
           rm -f cms-api.tar.gz
 
           docker compose pull db || true
