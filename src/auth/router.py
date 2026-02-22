@@ -45,12 +45,6 @@ router = APIRouter(
 
 
 # Endpoints
-@router.get("/test")
-async def auth_test():
-    """Deployment check: confirms latest backend is deployed. No auth required."""
-    return {"status": "ok", "message": "auth deployed", "path": "/auth/test"}
-
-
 @router.post("/google")
 async def google_login(
     payload: GoogleAuthRequest,
