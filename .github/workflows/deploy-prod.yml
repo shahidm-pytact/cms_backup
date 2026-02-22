@@ -67,15 +67,25 @@ jobs:
           DEPLOY_DIR="/opt/apps/cms-blogs-management/backend"
           cd "$DEPLOY_DIR" || { echo "ERROR: $DEPLOY_DIR not found on server"; exit 1; }
 
+          echo "[deploy] Loading image..."
           gunzip -t cms-api.tar.gz || (echo "ERROR: gzip integrity test failed" && exit 1)
           gunzip -c cms-api.tar.gz | docker load || (echo "ERROR: Failed to load Docker image" && exit 1)
           docker images cms-api:latest --format "{{.Repository}}:{{.Tag}}" | grep -q "cms-api:latest" || (echo "ERROR: Image not loaded" && exit 1)
           rm -f cms-api.tar.gz
 
+          echo "[deploy] Starting db..."
           docker compose pull db || true
           docker compose up -d db
+          echo "[deploy] Running migrations..."
           docker compose run --rm migrate
+          echo "[deploy] Starting all services (api)..."
           docker compose up -d
+          echo "[deploy] Containers after up -d:"
+          docker compose ps -a
+          echo "[deploy] API container logs (last 40 lines):"
+          docker compose logs api --tail 40 || true
+          echo "[deploy] Port 8000 listener:"
+          ss -tlnp | grep 8000 || true
 
           docker image prune -f
           echo "Deploy completed"
