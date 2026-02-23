@@ -75,3 +75,8 @@ static/images/blogs/*/
 
 # Documentation
 doc/
+
+# Rules
+@rules/
+
+rules/
